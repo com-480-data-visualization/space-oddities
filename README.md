@@ -2,9 +2,9 @@
 
 | Student's name | SCIPER |
 | -------------- | ------ |
-| | |
-| | |
-| | |
+|Vincent Fiszbin|394790|
+|Philip Patrick Jan Hamelink|311769|
+|Julien Schluchter|342745|
 
 [Milestone 1](#milestone-1) • [Milestone 2](#milestone-2) • [Milestone 3](#milestone-3)
 

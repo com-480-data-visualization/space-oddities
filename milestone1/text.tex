@@ -29,7 +29,7 @@ The UCS database is highly structured but was last updated in May 2023, requirin
     \end{tabular}
 \end{table}
 
-We will use Python libraries such as \texttt{Skyfield} or \texttt{SGP4} to convert raw TLEs into metrics such as altitude, inclination, and semi-major axis. This will also allow us to compare satellite's positions with each other as they orbit around the earth. The primary challenge will be joining metadata from the UCS with spatial data using unique NORAD Catalog IDs, and complementing this information with sources like Celestrak.
+The UCS database contains \textbf{7,560 rows} and 28 substantive columns; mass data is approximately 2\% incomplete. CelesTrak's SATCAT catalogs 68,147 total tracked objects across 17 columns. We will use Python libraries such as \texttt{Skyfield} or \texttt{SGP4} to convert raw TLEs into metrics such as altitude, inclination, and semi-major axis. The primary challenge will be joining metadata from the UCS with spatial data using unique NORAD Catalog IDs, and complementing this information with sources like CelesTrak.
 
 \section{Problematic}
 
@@ -54,15 +54,31 @@ With the commercial spaceflight boom, space sustainability has become a critical
 
 \section{Exploratory Data Analysis}
 \subsection{Initial Statistics}
-Initial exploration of the UCS dataset confirms a massive spike in LEO satellites over the last five years, largely driven by commercial telecommunications. We will generate the following visualizations for our initial analysis:
-\begin{itemize}
-    \item \textbf{Time-series Analysis:} Total objects launched per year versus objects currently in orbit.
-    \item \textbf{Mass Distribution:} Categorizing mass by country and purpose (e.g., Commercial vs. Military).
-    \item \textbf{Orbital Mapping:} Plotting density as a function of altitude (per km) to identify peak congestion zones.
-\end{itemize}
+Initial exploration reveals a space environment under growing stress. The UCS database catalogs \textbf{7,560 active satellites}, of which 89.5\% reside in LEO. Launch activity has grown dramatically: 2022 alone saw 2,113 new satellites — more than all launches before 2018 combined (see Figure~\ref{fig:launches}). The driving force is the deployment of mega-constellations such as Starlink, which now account for the majority of active LEO objects.
 
-\subsection{Insights}
-Preliminary data suggests that the region between 500km and 600km altitude contains the highest density of active payloads. Furthermore, the Space-Track catalog reveals that fragmentation events (anti-satellite tests, accidental collisions) account for the vast majority of trackable debris, significantly outweighing active payloads.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{fig_launches_per_year.pdf}
+    \caption{Satellites launched per year (UCS, 1957–2023). The Starlink era begins around 2019.}
+    \label{fig:launches}
+\end{figure}
+
+\subsection{Debris vs. Payloads}
+CelesTrak's SATCAT catalogs \textbf{68,147 total tracked objects} since Sputnik. As shown in Figure~\ref{fig:objects}, debris (35,749) outnumbers operational satellites (14,748) by \textbf{2.4:1}. Rocket bodies add a further 6,820 objects. The orbit class breakdown (Figure~\ref{fig:orbit}) confirms the extreme concentration in LEO.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{fig_objects_breakdown.pdf}
+        \caption{All tracked objects by type (CelesTrak SATCAT).}
+        \label{fig:objects}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{fig_orbit_class.pdf}
+        \caption{Orbit class distribution of active satellites (UCS 2023).}
+        \label{fig:orbit}
+    \end{minipage}
+\end{figure}
 
 \section{Related work}
 \subsection{Existing Visualization Projects}
@@ -72,4 +88,12 @@ Preliminary data suggests that the region between 500km and 600km altitude conta
 \end{itemize}
 
 \subsection{Originality \& Inspiration}
-Our approach differs by being \textbf{narrative-driven}. We will not just plot 3D points; we will integrate 2D temporal charts with a filtered 3D view to visualize "orbital highways." By incorporating risk-based data (CDMs), we uniquely visualize the \textit{potential} for disaster rather than just the \textit{presence} of objects. We draw inspiration from the aesthetic of \textit{Stuff in Space} but intend to provide the data depth of commercial tools like LeoLabs in a publicly accessible, educational format.
+Our approach differs by being \textbf{narrative-driven}. We will not just plot 3D points; we will integrate 2D temporal charts with a filtered 3D view to visualize "orbital highways." By incorporating risk-based data (CDMs), we uniquely visualize the \textit{potential} for disaster rather than just the \textit{presence} of objects. We draw inspiration from the aesthetic of \textit{Stuff in Space} but intend to provide the data depth of commercial tools like LeoLabs in a publicly accessible, educational format. Esri's ArcGIS satellite map \cite{esri-satellite} also demonstrates the power of a curated 3D orbit view, which informs our design.
+
+\subsection{Visual Inspiration}
+Beyond space-specific tools, we look to broader data journalism for narrative and aesthetic guidance:
+\begin{itemize}
+    \item \textbf{The Pudding} (\texttt{pudding.cool}) — a primary structural inspiration for scrollytelling that guides users through a data-driven story step by step.
+    \item \textbf{Information is Beautiful} (\texttt{informationisbeautiful.net}) — inspires the layered, dense visual language we aim to achieve for showing relative object populations.
+    \item \textbf{ESA Space Debris Office} — their debris evolution charts and belt cross-sections provide a benchmark for representing orbital density as a continuous quantity rather than discrete points.
+\end{itemize}

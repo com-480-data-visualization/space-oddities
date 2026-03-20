@@ -169,14 +169,17 @@
  \end{picture}}%
  \ifx\tempa\empty%
  \else%
+    \hfill\rule{130pt}{0.5pt}\\%
+    \mbox{}\hfill\tempa%
+    \ifx\tempb\empty%
+    \else%
+        , \emph{\tempb}%
+    \fi%
     \ifx\tempc\empty%
-       \ifx\tempb\empty
-           \hfill\rule{130pt}{0.5pt}\\\mbox{}\hfill\tempa%
-       \else
-           \hfill\rule{130pt}{0.5pt}\\\mbox{}\hfill\tempa\\\mbox{}\hfill\tempb%
-%   \else%
-%      \hfill\rule{130pt}{0.5pt}\\\mbox{}\hfill\tempa,\ \emph{\tempb},\ \tempc%
-   \fi\fi\par%
+    \else%
+        , \tempc%
+    \fi%
+ \fi\par%
    \vspace{1em}%
  \end{list}%
  }%

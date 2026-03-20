@@ -1,40 +1,75 @@
-\section{DataSet}
+\begin{summary}
+    This project, \textit{Space Oddities}, explores the historical growth and current density of artificial objects in Earth's orbit. By combining metadata from the Union of Concerned Scientists with orbital elements from Space-Track, we aim to visualize the risk of orbital congestion and the emergence of "mega-constellations" like Starlink. Our visualization will guide users from a historical overview of space launches to a visual mapping of collision risks in Low Earth Orbit (LEO).
+\end{summary}
 
-\subsection{Dataset(s) chosen:}
+\section{Dataset}
+
+\subsection{Data Sources}
+To ensure a comprehensive analysis, we will use three primary datasets:
 \begin{enumerate}
-    \item UCS Satellite Database: Is a comprehensive public registry detailing active satellites currently orbiting Earth. It provides crucial metadata for our analysis, including ownership, country of origin, primary purpose, mass, and orbit class. However this data was last updated in May 2023 so some of it may be out of date. (Available at: \url{www.ucsusa.org/resources/satellite-database})
-    \item Space-Track.org: Is maintained by the US Space Command, this platform will provide our raw spatial data. We will retrieve Two-Line Elements (TLEs) for the entire catalog of tracked orbital objects spanning active payloads, spent rocket bodies, and fragmentation debris. Additionally, we will use it to source Conjunction Data Messages (CDMs) to analyze close-approach events and visually map collision risks. (Available at: \url{www.space-track.org})
-    \item Celestrak: Is another dataset maintained by Dr. T. S. Kelso. It contains satellite catalogues along with orbital data. We will use this data as an external source to compare and augment results from SpaceTrack.
+    \item \textbf{UCS Satellite Database} \cite{ucs-database}: A comprehensive registry detailing active satellites. It provides crucial metadata including ownership, country of origin, purpose, mass, and orbit class.
+    \item \textbf{Space-Track.org} \cite{space-track}: Maintained by the US Space Command, this platform provides raw spatial data via Two-Line Elements (TLEs) for the entire catalog of tracked orbital objects, including active payloads and debris.
+    \item \textbf{CelesTrak} \cite{celestrak}: Maintained by Dr. T. S. Kelso, this dataset serves as an external source to compare and augment results from Space-Track.
 \end{enumerate}
 
-\subsection{Quality \& Preprocessing:}
-The UCS database is highly structured and well-maintained (Excel/CSV), requiring minimal cleaning aside from handling a few missing values (e.g., exact mass for classified satellites, expected lifetime, etc.) and standardizing country names.
-The Space-Track and Celestrak data will require more preprocessing. TLEs are raw text formats that encode orbital elements. We will use Python libraries like skyfield or sgp4 to parse these TLEs and compute human-readable metrics sch as the altitude, inclination, semi-major axis. The main data-wrangling challenge will be joining the rich metadata from UCS with the spatial data from Space-Track using the unique NORAD Catalog ID assigned to each object.
+
+\subsection{Quality \& Preprocessing}
+The UCS database is highly structured but was last updated in May 2023, requiring careful synchronization with current orbital data. Space-Track data is updated daily but requires complex parsing of TLE text formats.
+
+\begin{table}[H]
+    \centering
+    \caption{Dataset Comparison and Characteristics}
+    \label{tab:datasets}
+    \begin{tabular}{@{}llll@{}} \toprule
+        Feature & UCS Database & Space-Track & CelesTrak \\ \midrule
+        \textbf{Primary Content} & Active Satellites & TLEs (Active + Debris) & TLEs + SATCAT \\
+        \textbf{Format} & Excel / CSV & Text / API & Text / JSON \\
+        \textbf{Update Frequency} & Quarterly & Daily & Real-time \\
+        \textbf{Preprocessing} & Minimal (Cleaning) & High (TLE Parsing) & Moderate (Validation) \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+We will use Python libraries such as \texttt{Skyfield} or \texttt{SGP4} to convert raw TLEs into metrics such as altitude, inclination, and semi-major axis. This will also allow us to compare satellite's positions with each other as they orbit around the earth. The primary challenge will be joining metadata from the UCS with spatial data using unique NORAD Catalog IDs, and complementing this information with sources like Celestrak.
 
 \section{Problematic}
-\subsection{Topic \& Main Axis:}
-Our visualization will explore the exponential growth of artificial objects in Earth's orbit, focusing on space congestion and the looming threat of the "Kessler Syndrome" (a theoretical scenario where the density of objects is high enough that collisions cause a cascading generation of debris).
-What we are trying to show:
-We want to transition from a historical overview of space launches to a current spatial mapping of orbital density. We aim to highlight how "mega-constellations" (like SpaceX's Starlink) are drastically altering the Low Earth Orbit (LEO) landscape. By mapping conjunction messages (close calls), we will visually demonstrate where the highest risks of collision are currently located.
 
-\subsection{Motivation \& Target Audience:}
-Space is often thought of as an infinite void, but specific orbits are limited resources. With commercial spaceflight booming, space sustainability is a critical issue. Our target audience includes the general public, space enthusiasts, and policymakers who need an intuitive, visual understanding of how crowded our immediate cosmic neighborhood has become.
+\begin{fquote}[Donald J. Kessler][][\cite{kessler-syndrome}]
+    The orbit of the Earth is a limited resource. As we place more and more objects into it, the probability of collisions will increase until the collision rate exceeds the rate of removal by atmospheric drag.
+\end{fquote}
 
-\section{Exploratory Data Analysis}
-\subsection{Pre-processing \& Initial Exploratory Data Analysis:}
-First, we will merge the UCS database (operational satellites) with the broader Space-Track and Celestrak catalogs (which includes debris).
+\subsection{Topic \& Main Axis}
+Our visualization explores the exponential growth of orbital objects, focusing on congestion and the threat of the "Kessler Syndrome" \cite{kessler-syndrome}. We aim to answer:
 \begin{itemize}
-    \item Categorization: We will group objects by type (Payload, Rocket Body, Debris) and orbit class (LEO, MEO, GEO).
-    \item Basic Statistics: Initial exploration of the UCS dataset shows a massive spike in LEO satellites over the last 5 years. \hl{I think we could plot a time-series of total objects launched per year versus objects currently in orbit and other basics plots here.}
-    \item Insights: We expect the exploratory data analysis to confirm that LEO (specifically between 500km and 600km altitude) contains the highest density of objects, primarily driven by commercial communications constellations. Furthermore, by exploring the Space-Track debris catalog, we anticipate finding that fragmentation events (like anti-satellite tests or accidental collisions) account for the vast majority of trackable objects, heavily outweighing active payloads.
+    \item \textbf{Where} is the highest density of objects currently located?
+    \item \textbf{How} have mega-constellations altered the landscape of LEO?
+    \item \textbf{What} are the current risks of collision ?
 \end{itemize}
 
+\begin{invsummary}
+    \textbf{The Kessler Syndrome:} A theoretical scenario where the density of objects in LEO is high enough that collisions between objects cause a cascade of debris, potentially making specific orbits unusable for generations.
+\end{invsummary}
+
+\subsection{Motivation \& Target Audience}
+With the commercial spaceflight boom, space sustainability has become a critical global issue. Our target audience includes the general public and policymakers who require an intuitive understanding of orbital density that raw data alone cannot provide.
+
+\section{Exploratory Data Analysis}
+\subsection{Initial Statistics}
+Initial exploration of the UCS dataset confirms a massive spike in LEO satellites over the last five years, largely driven by commercial telecommunications. We will generate the following visualizations for our initial analysis:
+\begin{itemize}
+    \item \textbf{Time-series Analysis:} Total objects launched per year versus objects currently in orbit.
+    \item \textbf{Mass Distribution:} Categorizing mass by country and purpose (e.g., Commercial vs. Military).
+    \item \textbf{Orbital Mapping:} Plotting density as a function of altitude (per km) to identify peak congestion zones.
+\end{itemize}
+
+\subsection{Insights}
+Preliminary data suggests that the region between 500km and 600km altitude contains the highest density of active payloads. Furthermore, the Space-Track catalog reveals that fragmentation events (anti-satellite tests, accidental collisions) account for the vast majority of trackable debris, significantly outweighing active payloads.
+
 \section{Related work}
-\subsection{Existing Work:}
-Projects like "Stuff in Space" (Available at: \url{https://stuffin-space.vader.zone}) (a 3D webGL visualization) or  do a fantastic job of showing the real-time position of objects. Additionally, the UCS provides static graphs of their database, and various space agencies publish reports on the Kessler syndrome.
-There are also other tool LeoLabs (Available at: \url{https://platform.leolabs.space/visualization}) or STK (Available at:  \url{https://www.ansys.com/products/missions/ansys-stk}) that allow to visualize conjunctions, but these are proprietary tools that require expensive licenses. 
+\subsection{Existing Visualization Projects}
+\begin{itemize}
+    \item \textbf{Stuff in Space} \cite{stuff-in-space}: A 3D WebGL visualization showing real-time positions. While technically impressive, it lacks a guided narrative.
+    \item \textbf{LeoLabs} \cite{leolabs}: A commercial platform for conjunction monitoring. However, it is primarily a proprietary tool for satellite operators.
+\end{itemize}
 
-\subsection{Originality of our approach:}
-While "Stuff in Space" is an excellent technical demo, it is primarily an interactive globe without a guided narrative. Our approach is original because it is heavily narrative-driven: we are not just plotting points in 3D (e.g., using CesiumJS or similar libraries). We will combine 2D charts (to explain the historical growth and metadata) with a filtered 3D view to visualize orbital "highways" and specific congestion zones. We also uniquely incorporate conjunction data (close-calls) to visualize risk rather than just presence.
-
-\subsection{Inspiration:}
+\subsection{Originality \& Inspiration}
+Our approach differs by being \textbf{narrative-driven}. We will not just plot 3D points; we will integrate 2D temporal charts with a filtered 3D view to visualize "orbital highways." By incorporating risk-based data (CDMs), we uniquely visualize the \textit{potential} for disaster rather than just the \textit{presence} of objects. We draw inspiration from the aesthetic of \textit{Stuff in Space} but intend to provide the data depth of commercial tools like LeoLabs in a publicly accessible, educational format.

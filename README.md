@@ -10,6 +10,8 @@
 
 ## Milestone 1 (20th March, 5pm)
 
+A pdf version of the Milestone 1 report can be found [here](./Milestone%201%20Report.pdf)
+
 **10% of the final grade**
 
 This is a preliminary milestone to let you set up goals for your final project and assess the feasibility of your ideas.

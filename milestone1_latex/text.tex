@@ -1,0 +1,186 @@
+\begin{summary}
+    This project, \textit{Space Oddities}, explores the historical growth and current density of artificial objects in Earth's orbit. By combining metadata from the Union of Concerned Scientists with orbital elements from Space-Track and CelesTrak, we aim to visualize the risk of orbital congestion and the emergence of "mega-constellations" like Starlink. Our visualization will guide users from a historical overview of space launches to a visual mapping of collision risks in Low Earth Orbit (LEO).
+\end{summary}
+
+\section{Dataset}
+
+\subsection{Data Sources}
+To ensure a comprehensive analysis, we will use three primary datasets:
+\begin{enumerate}
+    \item \textbf{UCS Satellite Database} \cite{ucs-database}: A comprehensive registry detailing active satellites. It provides crucial metadata including ownership, country of origin, purpose, mass, and orbit class.
+    \item \textbf{Space-Track.org} \cite{space-track}: Maintained by the US Space Command, this platform provides raw spatial data via Two-Line Elements (TLEs) for the entire catalog of tracked orbital objects, including active payloads and debris. It also publishes \textbf{Conjunction Data Messages (CDMs)}, automated alerts issued whenever two tracked objects are predicted to pass within a dangerous proximity threshold.
+    \item \textbf{CelesTrak} \cite{celestrak}: Maintained by Dr. T. S. Kelso, this dataset serves as an external source to compare and augment TLEs results from Space-Track.
+\end{enumerate}
+
+\subsection{Quality \& Preprocessing}
+The UCS database is highly structured but was last updated in May 2023, requiring careful synchronization with current orbital data. Both Space-Track and CelesTrak data are updated regularly and Space-Track requires parsing of TLE text formats.
+
+% \begin{table}[H]
+%     \centering
+%     \caption{Dataset Comparison and Characteristics}
+%     \label{tab:datasets}
+%     \begin{tabular}{@{}llll@{}} \toprule
+%         Feature & UCS Database & Space-Track & CelesTrak \\ \midrule
+%         \textbf{Primary Content} & Active Satellites & TLEs (Active + Debris) & TLEs + SATCAT \\
+%         \textbf{Format} & Excel / CSV & Text / API & Text / JSON \\
+%         \textbf{Update Frequency} & Quarterly & Daily & Real-time \\
+%         \textbf{Preprocessing} & Minimal (Cleaning) & High (TLE Parsing) & Moderate (Validation) \\ \bottomrule
+%     \end{tabular}
+% \end{table}
+
+
+\begin{table}[H]
+    \centering
+    \caption{Comparison of the main data providers used in the pipeline.}
+    \label{tab:datasets}
+    
+    \begin{tabularx}{\textwidth}{@{}p{2.5cm}XXX@{}}
+        \toprule
+        & \textbf{UCS Database} & \textbf{Space-Track} & \textbf{CelesTrak} \\
+        \midrule
+        
+        \textbf{Data Used} 
+        & Satellite metadata (ownership, purpose, mass, orbit class) 
+        & TLEs, SATCAT, CDMs 
+        & TLEs, SATCAT \\
+        
+        \textbf{Update policy} 
+        & Last update in May 2023
+        & Regular update
+        & Regular update \\
+        
+        \textbf{Format} 
+        & Excel 
+        & Text / API 
+        & CSV \\
+        
+        \textbf{Preprocessing} 
+        & Excel parsing, NORAD ID matching, handling missing values
+        & TLE parsing, filtering, CDM event extraction 
+        & CSV parsing, NORAD ID matching \\
+        
+        \textbf{Role in Pipeline} 
+        & Metadata enrichment
+        & Primary operational data source for TLEs, SATCAT, CDMs
+        & Secondary source for TLEs and SATCAT \\
+        
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+
+The UCS database contains 7,560 rows and 27 relevant columns; mass data is approximately 2\% incomplete. Space-Track’s full TLE catalog contains 68,107 entries. CelesTrak’s SATCAT catalogs 68,147 tracked objects across 17 columns. It is possible to filter the data to retain only objects currently in orbit, for instance using decay-related fields. We will use Python libraries such as \texttt{Skyfield} or \texttt{SGP4} to convert raw TLEs into metrics such as altitude, inclination, and semi-major axis. Using propagation, we can also use this data to estimate the position of satellites and their current orbit. The primary challenge will be joining metadata from the UCS with spatial data using unique NORAD Catalog IDs, and complementing this information with sources like CelesTrak.
+
+\subsection{Conjunction Data Messages in Detail}
+A CDM is a structured alert issued by US Space Command whenever two tracked objects are projected to pass closer than a safety threshold. Each record contains the identities of both objects, the predicted miss distance at TCA, and a computed collision probability $P_c$. Table~\ref{tab:cdm-example} shows a real CDM from the Space-Track feed: an active US Navy satellite, \textit{GEOSAT}, on a predicted close approach with an abandoned Indian rocket body, only 385\,m apart, roughly the length of four football fields, at orbital velocities exceeding 7\,km/s.
+
+\begin{table}[H]
+    \centering
+    \caption{Real CDM example (Space-Track, issued 19 March 2026). $P_c > 10^{-4}$ is the standard industry threshold for elevated concern.}
+    \label{tab:cdm-example}
+    \begin{tabular}{@{}lll@{}} \toprule
+        Field & Value & Meaning \\ \midrule
+        \texttt{TCA}        & 2026-03-22 16:17 UTC  & Time of Closest Approach \\
+        \texttt{MIN\_RNG}   & 385\,m                & Predicted miss distance \\
+        \texttt{PC}         & $5.6 \times 10^{-4}$  & Collision probability \\
+        \texttt{EMERGENCY\_REPORTABLE} & Y & Exceeds reporting threshold \\
+        \texttt{SAT\_1}     & GEOSAT (NORAD 15595)  & Active payload (US Navy) \\
+        \texttt{SAT1\_OBJECT\_TYPE} & PAYLOAD (LARGE RCS)  & \\
+        \texttt{SAT\_2}     & PSLV R/B (NORAD 39093) & Abandoned rocket body \\
+        \texttt{SAT2\_OBJECT\_TYPE} & ROCKET BODY (LARGE RCS) & \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+
+This is precisely the scenario our visualization aims to make tangible: two massive objects, neither of which can manoeuvre, converging to within a few hundred metres. A collision at these velocities would generate thousands of new debris fragments, each capable of triggering further collisions, the first step in the Kessler cascade.
+
+
+\section{Problematic}
+
+\begin{fquote}[Donald J. Kessler][][\cite{kessler-syndrome}]
+    The orbit of the Earth is a limited resource. As we place more and more objects into it, the probability of collisions will increase until the collision rate exceeds the rate of removal by atmospheric drag.
+\end{fquote}
+
+\subsection{Topic \& Main Axis}
+Our visualization explores the exponential growth of orbital objects, focusing on congestion and the threat of the "Kessler Syndrome" \cite{kessler-syndrome}. We aim to answer:
+\begin{itemize}
+    \item \textbf{Where} is the highest density of objects currently located?
+    \item \textbf{How} have mega-constellations altered the landscape of LEO?
+    \item \textbf{What} are the current risks of collision, and how can we make a CDM, a raw table of numbers, visually meaningful to a non-expert?
+\end{itemize}
+
+\begin{invsummary}
+    \textbf{The Kessler Syndrome:} A theoretical scenario where the density of objects in LEO is high enough that collisions between objects cause a cascade of debris, potentially making specific orbits unusable for generations.
+\end{invsummary}
+
+\subsection{Motivation \& Target Audience}
+With the commercial spaceflight boom, space sustainability has become a critical global issue. Our target audience includes the general public and policymakers who require an intuitive understanding of orbital density that raw data alone cannot provide. A CDM entry reporting $P_c = 5.6\times10^{-4}$ and a miss distance of 385\,m means little to a non-specialist; our goal is to translate that into something visceral: two objects, their trajectories, and the shrinking gap between them.
+
+\section{Exploratory Data Analysis}
+\subsection{Initial Statistics}
+Initial exploration reveals a space environment under growing stress. The UCS database catalogs 7,560 active satellites, of which 89.5\% reside in LEO. Launch activity has grown dramatically: 2022 alone saw 2,113 new satellites, more than all launches before 2018 combined (see Figure~\ref{fig:launches}). The driving force is the deployment of mega-constellations such as Starlink, which now account for the majority of active LEO objects.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{fig_launches_per_year.pdf}
+    \caption{Satellites launched per year (UCS, 1957–2023). The Starlink era begins around 2019.}
+    \label{fig:launches}
+\end{figure}
+
+\subsection{Debris vs. Payloads}
+CelesTrak's SATCAT catalogs 68,147 total tracked objects since Sputnik. As shown in Figure~\ref{fig:objects}, debris (35,749) outnumbers operational satellites (14,748) by 2.4:1. Rocket bodies add a further 6,820 objects. The orbit class breakdown (Figure~\ref{fig:orbit}) confirms the extreme concentration in LEO.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{fig_objects_breakdown.pdf}
+        \caption{All tracked objects by type (CelesTrak SATCAT).}
+        \label{fig:objects}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.48\linewidth}
+        \includegraphics[width=\linewidth]{fig_orbit_class.pdf}
+        \caption{Orbit class distribution of active satellites (UCS 2023).}
+        \label{fig:orbit}
+    \end{minipage}
+\end{figure}
+
+\section{Related work}
+\subsection{Existing Visualization Projects}
+
+The landscape of orbital visualization is dominated by two extremes: real-time tracking and professional monitoring. Stuff in Space from \cite{stuff-in-space} provides a technically impressive 3D WebGL environment showing real-time positions of all tracked objects. However, it functions more as a digital twin than a narrative tool, lacking context for the average user. On the professional side, \cite{leolabs} offers high-fidelity conjunction monitoring, but its interface is designed for satellite operators, making the data's gravity difficult for the public to grasp.
+
+\subsection{Originality \& Inspiration}
+Our project, bridges the gap between raw spatial data and public awareness through a narrative-driven approach. Unlike existing tools that plot 3D points, we will:
+\begin{itemize}
+    \item Visualize the "Invisible" Risk: By integrating Conjunction Data Messages (CDMs) , we move beyond showing where things are to showing where they might collide.
+    \item Contextualize Mega-Constellations: We will specificall\input{acronyms}y highlight the impact of the "Starlink era" on orbital density.
+    \item Humanize the Scale: We translate abstract distances (e.g., a 385m miss distance) into visceral comparisons to make the danger of the Kessler Syndrome tangible.
+\end{itemize}
+
+\subsection{Visual Inspiration}
+
+To bridge the gap between complex orbital mechanics and intuitive storytelling, we draw inspiration from premier data journalism and space agencies:
+
+\textbf{Narrative Scrollytelling} (The Pudding): We look to The Pudding as a structural benchmark for scrollytelling. Their ability to guide users through complex datasets step-by-step is essential for preventing "data overwhelm" when visualizing the 68,147 objects currently tracked in CelesTrak's SATCAT.
+    
+Reference: \texttt{https://pudding.cool/2017/10/satellites/}
+
+\textbf{Layered Visual Language} (Information is Beautiful): To represent the diverse populations of orbital objects including the 2.4:1 ratio of debris to operational satellites we adapt the dense, layered aesthetic popularized by Information is Beautiful. This style allows for a clear comparison of mass and purpose across thousands of data points.
+    
+Reference: \texttt{https://informationisbeautiful.net} \newline \texttt{https://satellitecharts.xyz}
+    
+\textbf{From Discrete Points to Orbital Density} (ESA): We take inspiration from the ESA Space Debris Office and their use of spatial density maps (see Figure~\ref{fig:Spatial_density_of_objects_by_orbital_altitude}). Rather than rendering satellites as isolated dots, which can be misleading at a global scale, we aim to visualize "orbital highways" as continuous regions of varying density. This approach effectively illustrates how the extreme concentration in LEO (89.5\% of active satellites) creates "stressed" environments where the risk of the Kessler Syndrome becomes a visible reality.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Images/fig_Spatial_density_of_objects_by_orbital_altitude.png}
+    \caption{Spatial density of objects by orbital altitude}
+    \label{fig:Spatial_density_of_objects_by_orbital_altitude}
+\end{figure}
+
+Reference:\newline
+\url{https://www.esa.int/ESA_Multimedia/Images/2019/10/Spatial_density_of_objects_by_orbital_altitude} 
+
+
+

@@ -43,9 +43,9 @@ This project, Space Oddities, explores the historical growth and current density
 
 ### 1.1 Data Sources
 To ensure a comprehensive analysis, we will use three primary datasets:
-1.⁠ UCS Satellite Database: A comprehensive registry detailing active satellites. It provides crucial metadata including ownership, country of origin, purpose, mass, and orbit class.
-2.⁠ Space-Track.org: Maintained by the US Space Command, this platform provides raw spatial data via Two-Line Elements (TLEs) for the entire catalog of tracked orbital objects, including active payloads and debris. It also publishes Conjunction Data Messages (CDMs), automated alerts issued whenever two tracked objects are predicted to pass within a dangerous proximity threshold.
-3.⁠ CelesTrak: Maintained by Dr. T. S. Kelso, this dataset serves as an external source to compare and augment TLEs results from Space-Track.
+- UCS Satellite Database: A comprehensive registry detailing active satellites. It provides crucial metadata including ownership, country of origin, purpose, mass, and orbit class.
+- Space-Track.org: Maintained by the US Space Command, this platform provides raw spatial data via Two-Line Elements (TLEs) for the entire catalog of tracked orbital objects, including active payloads and debris. It also publishes Conjunction Data Messages (CDMs), automated alerts issued whenever two tracked objects are predicted to pass within a dangerous proximity threshold.
+- CelesTrak: Maintained by Dr. T. S. Kelso, this dataset serves as an external source to compare and augment TLEs results from Space-Track.
 
 ### 1.2 Quality & Preprocessing
 The UCS database is highly structured but was last updated in May 2023, requiring careful synchronization with current orbital data. Both Space-Track and CelesTrak data are updated regularly and Space-Track requires parsing of TLE text formats.

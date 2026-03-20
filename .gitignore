@@ -6,3 +6,6 @@
 *.iml
 out
 gen
+
+# Credentials — never commit
+.env

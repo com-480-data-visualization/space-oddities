@@ -101,9 +101,22 @@ With the commercial spaceflight boom, space sustainability has become a critical
 
 ### 3.1 Initial Statistics
 Initial exploration reveals a space environment under growing stress. The UCS database catalogs 7,560 active satellites, of which 89.5% reside in LEO. Launch activity has grown dramatically: 2022 alone saw 2,113 new satellites, more than all launches before 2018 combined. The driving force is the deployment of mega-constellations such as Starlink, which now account for the majority of active LEO objects.
+<p align="center">
+  <img src="images/fig_launches_per_year.png" width="80%" alt="Satellites launched per year" />
+  <br>
+  <em>Figure 1: Satellites launched per year (UCS, 1957–2023). The Starlink era begins around 2019.</em>
+</p>
 
 ### 3.2 Debris vs. Payloads
 CelesTrak's SATCAT catalogs 68,147 total tracked objects since Sputnik. As shown in our initial visualisations, debris (35,749) outnumbers operational satellites (14,748) by 2.4:1. Rocket bodies add a further 6,820 objects. The orbit class breakdown confirms the extreme concentration in LEO.
+
+<p align="center">
+  <img src="images/fig_objects_breakdown.pdf" width="45%" title="All tracked objects by type" />
+  <img src="images/fig_orbit_class.pdf" width="45%" title="Orbit class distribution" />
+</p>
+<p align="center">
+  <em>Figure 2 & 3: Tracked objects by type and Orbit class distribution.</em>
+</p>
 
 ---
 
@@ -126,6 +139,11 @@ To bridge the gap between complex orbital mechanics and intuitive storytelling, 
 •⁠  ⁠*Layered Visual Language (Information is Beautiful):* To represent the diverse populations of orbital objects—including the 2.4:1 ratio of debris to operational satellites—we adapt the dense, layered aesthetic popularized by Information is Beautiful. This style allows for a clear comparison of mass and purpose across thousands of data points.
   * Reference: ⁠ https://informationisbeautiful.net ⁠ / ⁠ https://satellitecharts.xyz ⁠
 •⁠  ⁠*From Discrete Points to Orbital Density (ESA):* We take inspiration from the ESA Space Debris Office and their use of spatial density maps. Rather than rendering satellites as isolated dots, which can be misleading at a global scale, we aim to visualize "orbital highways" as continuous regions of varying density. This approach effectively illustrates how the extreme concentration in LEO (89.5% of active satellites) creates "stressed" environments where the risk of the Kessler Syndrome becomes a visible reality.
+<p align="center">
+  <img src="images/fig_Spatial_density_of_objects_by_orbital_altitude.png" width="80%" />
+  <br>
+  <em>Figure 4: Spatial density of objects by orbital altitude (ESA).</em>
+</p>
   * Reference: ⁠ https://www.esa.int/ESA_Multimedia/Images/2019/10/Spatial_density_of_objects_by_orbital_altitude ⁠
 
 ---

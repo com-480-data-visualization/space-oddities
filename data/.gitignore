@@ -1,0 +1,8 @@
+# Keep large local datasets out of git
+raw/*
+processed/*
+
+# Keep directory markers and this rule file
+!raw/.gitkeep
+!processed/.gitkeep
+!.gitignore

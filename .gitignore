@@ -9,3 +9,4 @@ gen
 
 # Credentials — never commit
 .env
+.DS_Store

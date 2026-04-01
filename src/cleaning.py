@@ -47,4 +47,37 @@ def clean_ucs_columns(df: pd.DataFrame) -> pd.DataFrame:
             cleaned["sat_name_norm"] = cleaned[col].map(normalize_satellite_name)
             break
 
-    return cleaned
+    useful_cols = [
+        "norad_id",
+        "sat_name_norm",
+        "current_official_name_of_satellite",
+        "name_of_satellite,_alternate_names",
+        "country/org_of_un_registry",
+        "purpose",
+        "detailed_purpose",
+        "country_of_operator/owner",
+        "operator/owner",
+        "users",
+        "class_of_orbit",
+        "type_of_orbit",
+        "longitude_of_geo_(degrees)",
+        "perigee_(km)",
+        "apogee_(km)",
+        "eccentricity",
+        "inclination_(degrees)",
+        "period_(minutes)",
+        "launch_mass_(kg.)",
+        "dry_mass_(kg.)",
+        "power_(watts)",
+        "expected_lifetime_(yrs.)",
+        "contractor",
+        "country_of_contractor",
+        "date_of_launch",
+        "launch_site",
+        "launch_vehicle",
+        "cospar_number",
+        "norad_number",
+        "comments",
+    ]
+    available = [col for col in useful_cols if col in cleaned.columns]
+    return cleaned[available]

@@ -10,3 +10,4 @@ gen
 # Credentials — never commit
 .env
 .DS_Store
+__pycache__

@@ -8,6 +8,32 @@
 
 [Milestone 1](#milestone-1)  [Milestone 2](#milestone-2)  [Milestone 3](#milestone-3)
 
+## Project Structure
+
+```text
+space-oddities/
+├── data/
+│   ├── raw/             # Source files (UCS, SATCAT, TLE/CDM)
+│   ├── processed/       # Outputs from the fusion pipeline
+│   └── .gitignore       # Ignore heavy local datasets
+├── notebooks/           # EDA and experiments
+├── src/
+│   ├── fetch_data.py    # Download from Space-Track/CelesTrak
+│   ├── cleaning.py      # UCS column and name cleaning
+│   ├── merging.py       # Dataset merge logic
+│   └── orbit_engine.py  # SGP4 propagation utilities
+├── requirements.txt
+├── main.py              # Runs the end-to-end merge pipeline
+└── README.md
+```
+
+Quick start:
+
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run pipeline: `python main.py`
+
+---
+
 ## Milestone 1 (20th March, 5pm)
 
 # Space Oddities

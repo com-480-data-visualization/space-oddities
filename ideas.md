@@ -6,6 +6,13 @@
 - Each section/chapter answers a different question using the same visual scene
 - Each chapter can introduce additional charts (time series, bar charts, distributions) that appear alongside the main scene and are dynamically linked to it (hover, selection, filters updating both views)
 
+# Storytelling prototype
+To start the storytelling prototype, run this command from the root of the project:
+```bash
+python -m http.server 8000
+```
+Then open `http://localhost:8000/prototype.html` in your browser.
+
 # Chapters
 
 ## 1. Growth over time

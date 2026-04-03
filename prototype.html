@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Oddities - Base Orbit Scene</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+
+    :root {
+      --bg-0: #03050f;
+      --bg-1: #07142a;
+      --panel: rgba(8, 14, 26, 0.82);
+      --panel-border: rgba(166, 188, 217, 0.2);
+      --text: #e7eef9;
+      --muted: #9dafcc;
+      --orbit: rgba(150, 170, 200, 0.24);
+      --payload: #7dd3fc;
+      --debris: #fb7185;
+      --rocket: #fbbf24;
+      --other: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(86, 160, 255, 0.15), transparent 28%),
+        radial-gradient(circle at 78% 18%, rgba(32, 132, 255, 0.1), transparent 22%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 70%);
+      color: var(--text);
+      font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(0, 1.25fr) minmax(300px, 360px);
+      align-items: start;
+    }
+
+    .scene-card,
+    .side-card {
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: 0 20px 65px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+    }
+
+    .scene-card {
+      padding: 14px;
+      position: relative;
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .pill strong {
+      color: var(--text);
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: radial-gradient(circle at center, rgba(25, 48, 90, 0.2), rgba(3, 7, 16, 0.9));
+    }
+
+    #orbitCanvas {
+      width: 100%;
+      height: min(76vh, 930px);
+      display: block;
+    }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      min-width: 210px;
+      max-width: 260px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(4, 8, 18, 0.94);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, 0.4);
+      color: var(--text);
+      opacity: 0;
+      transform: translate(-50%, -115%);
+      transition: opacity 120ms ease;
+      z-index: 2;
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    .tooltip-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .tooltip-line {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .side-card {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .heading {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.3vw, 2rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.5;
+    }
+
+    .legend {
+      display: grid;
+      gap: 7px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      box-shadow: 0 0 12px currentColor;
+      flex: 0 0 auto;
+    }
+
+    .chart-wrap {
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px;
+    }
+
+    .chart-title {
+      margin: 0 0 8px;
+      font-size: 0.83rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .chart {
+      width: 100%;
+      height: 140px;
+      display: block;
+    }
+
+    .foot {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1080px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      #orbitCanvas {
+        height: 65vh;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .app {
+        padding: 12px;
+      }
+
+      .scene-card,
+      .side-card {
+        border-radius: 18px;
+      }
+
+      #orbitCanvas {
+        height: 58vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="scene-card">
+      <div class="top-row">
+        <div class="pill">Data source<strong>data/processed/objects.csv</strong></div>
+        <div class="pill">Rendered objects<strong id="renderedCount">0</strong></div>
+        <div class="pill">Hovered object<strong id="hoveredObject">None</strong></div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="orbitCanvas" width="1000" height="1000" aria-label="Earth orbit scene"></canvas>
+        <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <aside class="side-card">
+      <h1 class="heading">Base Orbit Scene</h1>
+      <p class="sub">
+        No filters yet. This is the raw foundation: D3 binds data and drives interaction, while Canvas handles drawing Earth,
+        orbital bands, and satellites/debris at scale.
+      </p>
+
+      <div class="legend">
+        <div class="legend-item"><span class="dot" style="color: var(--payload); background: var(--payload);"></span>Payload</div>
+        <div class="legend-item"><span class="dot" style="color: var(--debris); background: var(--debris);"></span>Debris</div>
+        <div class="legend-item"><span class="dot" style="color: var(--rocket); background: var(--rocket);"></span>Rocket body</div>
+        <div class="legend-item"><span class="dot" style="color: var(--other); background: var(--other);"></span>Other/unknown</div>
+      </div>
+
+      <div class="chart-wrap">
+        <p class="chart-title">Objects by Orbit Band</p>
+        <svg id="orbitChart" class="chart" viewBox="0 0 300 140" preserveAspectRatio="none"></svg>
+      </div>
+
+      <div class="chart-wrap">
+        <p class="chart-title">Objects by Category</p>
+        <svg id="categoryChart" class="chart" viewBox="0 0 300 140" preserveAspectRatio="none"></svg>
+      </div>
+
+      <div class="foot">
+        Positions are propagated from live TLE elements (SGP4 in browser). Objects marked deorbited are excluded.
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const EARTH_RADIUS_KM = 6371;
+    const MAX_PLOT_RADIUS_KM = 50000;
+    const bandReferenceKm = {
+      LEO: EARTH_RADIUS_KM + 1200,
+      MEO: EARTH_RADIUS_KM + 20200,
+      GEO: 42164,
+    };
+
+    const categoryColors = {
+      payload: getComputedStyle(document.documentElement).getPropertyValue('--payload').trim(),
+      debris: getComputedStyle(document.documentElement).getPropertyValue('--debris').trim(),
+      'rocket body': getComputedStyle(document.documentElement).getPropertyValue('--rocket').trim(),
+      other: getComputedStyle(document.documentElement).getPropertyValue('--other').trim(),
+    };
+
+    const canvas = document.getElementById('orbitCanvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const renderedCountEl = document.getElementById('renderedCount');
+    const hoveredObjectEl = document.getElementById('hoveredObject');
+
+    const dpi = window.devicePixelRatio || 1;
+    const logicalSize = 1000;
+    canvas.width = logicalSize * dpi;
+    canvas.height = logicalSize * dpi;
+    ctx.setTransform(dpi, 0, 0, dpi, 0, 0);
+
+    const center = { x: logicalSize / 2, y: logicalSize / 2 };
+    const earthRadius = 88;
+    const radialScale = d3.scaleSqrt()
+      .domain([0, MAX_PLOT_RADIUS_KM])
+      .range([earthRadius + 16, 470]);
+
+    const satellites = [];
+    let hovered = null;
+    let quadtree = null;
+    let lastPropagationMs = 0;
+
+    init();
+
+    async function init() {
+      try {
+        const [objectRows, tleRows] = await Promise.all([
+          d3.csv('data/processed/objects.csv'),
+          d3.csv('data/processed/tle.csv'),
+        ]);
+        const now = new Date();
+        const cleanObjects = objectRows.filter((row) => row.norad_id && row.norad_id !== 'norad_id');
+        const activeObjects = cleanObjects.filter((row) => !isDeorbited(row, now));
+        const tleByNorad = buildTleLookup(tleRows);
+        const boundData = bindSatellites(activeObjects, tleByNorad);
+
+        satellites.push(...boundData);
+        renderedCountEl.textContent = satellites.length.toLocaleString();
+
+        updatePropagatedPositions(now);
+        buildCharts(satellites);
+        animate();
+      } catch (error) {
+        renderedCountEl.textContent = 'error';
+        console.error(error);
+      }
+    }
+
+    function bindSatellites(rows, tleByNorad) {
+      // D3 drives the data binding, while Canvas handles rendering performance.
+      return d3.map(rows, (row, idx) => {
+        const noradId = String(row.norad_id || '').trim();
+        const tle = tleByNorad.get(noradId);
+        if (!tle) return null;
+
+        const satrec = satellite.twoline2satrec(tle.tle_line1, tle.tle_line2);
+        if (!satrec || satrec.error) return null;
+
+        const category = normalizeCategory(row);
+
+        return {
+          id: noradId || `mock-${idx}`,
+          name: row.OBJECT_NAME || row.object_name || 'Unknown object',
+          operator: row['operator/owner'] || row.OWNER || 'Unknown operator',
+          orbitBand: 'LEO',
+          category,
+          satrec,
+          eciX: 0,
+          eciY: 0,
+          eciZ: 0,
+          xyKm: 0,
+          geoKm: 0,
+          size: category === 'debris' ? 1.8 : category === 'rocket body' ? 2.2 : category === 'payload' ? 2 : 1.6,
+          color: categoryColors[category] || categoryColors.other,
+          x: 0,
+          y: 0,
+        };
+      }).filter(Boolean);
+    }
+
+    function buildTleLookup(rows) {
+      const map = new Map();
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i];
+        const noradId = String(row.norad_id || '').trim();
+        if (!noradId || noradId === 'norad_id') continue;
+        if (!row.tle_line1 || !row.tle_line2) continue;
+        map.set(noradId, row);
+      }
+      return map;
+    }
+
+    function normalizeCategory(row) {
+      const token = `${row.object_type_simplified || ''} ${row.OBJECT_TYPE || ''}`.toUpperCase();
+      if (token.includes('DEB')) return 'debris';
+      if (token.includes('R/B') || token.includes('ROCKET')) return 'rocket body';
+      if (token.includes('PAY') || token.trim() === 'P') return 'payload';
+      return 'other';
+    }
+
+    function inferOrbitBandFromAltitude(altitudeKm) {
+      if (!Number.isFinite(altitudeKm)) return 'LEO';
+      if (altitudeKm < 2000) return 'LEO';
+      if (altitudeKm < 35786) return 'MEO';
+      return 'GEO';
+    }
+
+    function isDeorbited(row, now) {
+      const status = String(row.OPS_STATUS_CODE || '').trim().toUpperCase();
+      if (status === 'D') return true;
+
+      const decayRaw = String(row.DECAY_DATE || '').trim();
+      if (!decayRaw) return false;
+
+      const decayDate = new Date(decayRaw);
+      if (Number.isNaN(decayDate.getTime())) return false;
+      return decayDate <= now;
+    }
+
+    function updatePropagatedPositions(when) {
+      for (let i = 0; i < satellites.length; i += 1) {
+        const sat = satellites[i];
+        const propagation = satellite.propagate(sat.satrec, when);
+        if (!propagation || !propagation.position) continue;
+
+        const eci = propagation.position;
+        const xKm = eci.x;
+        const yKm = eci.y;
+        const zKm = eci.z;
+
+        sat.eciX = xKm;
+        sat.eciY = yKm;
+        sat.eciZ = zKm;
+
+        sat.xyKm = Math.sqrt((xKm * xKm) + (yKm * yKm));
+        sat.geoKm = Math.sqrt((xKm * xKm) + (yKm * yKm) + (zKm * zKm));
+
+        const angle = Math.atan2(yKm, xKm);
+        const clampedRadius = Math.min(sat.xyKm, MAX_PLOT_RADIUS_KM);
+        const displayRadius = radialScale(clampedRadius);
+
+        sat.x = center.x + Math.cos(angle) * displayRadius;
+        sat.y = center.y + Math.sin(angle) * displayRadius;
+        sat.orbitBand = inferOrbitBandFromAltitude(sat.geoKm - EARTH_RADIUS_KM);
+      }
+    }
+
+    function buildCharts(data) {
+      const orbitCounts = d3.rollups(data, (v) => v.length, (d) => d.orbitBand)
+        .sort((a, b) => d3.ascending(a[0], b[0]))
+        .map(([label, value]) => ({ label, value }));
+
+      const categoryCounts = d3.rollups(data, (v) => v.length, (d) => d.category)
+        .sort((a, b) => d3.descending(a[1], b[1]))
+        .map(([label, value]) => ({ label, value }));
+
+      drawBarChart('#orbitChart', orbitCounts, (d) => '#9fc5ff');
+      drawBarChart('#categoryChart', categoryCounts, (d) => categoryColors[d.label] || '#9ca3af');
+    }
+
+    function drawBarChart(selector, data, colorFn) {
+      const svg = d3.select(selector);
+      const width = 300;
+      const height = 140;
+      const margin = { top: 8, right: 8, bottom: 24, left: 8 };
+
+      const x = d3.scaleBand()
+        .domain(data.map((d) => d.label))
+        .range([margin.left, width - margin.right])
+        .padding(0.35);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, (d) => d.value) || 1])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+
+      svg.selectAll('*').remove();
+
+      svg.selectAll('rect.bar')
+        .data(data)
+        .join('rect')
+        .attr('class', 'bar')
+        .attr('x', (d) => x(d.label))
+        .attr('y', (d) => y(d.value))
+        .attr('width', x.bandwidth())
+        .attr('height', (d) => y(0) - y(d.value))
+        .attr('fill', colorFn)
+        .attr('opacity', 0.92)
+        .attr('rx', 4);
+
+      svg.selectAll('text.tick')
+        .data(data)
+        .join('text')
+        .attr('class', 'tick')
+        .attr('x', (d) => x(d.label) + x.bandwidth() / 2)
+        .attr('y', height - 8)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 10)
+        .attr('fill', '#9dafcc')
+        .text((d) => d.label === 'rocket body' ? 'rocket' : d.label);
+    }
+
+    function animate() {
+      const nowMs = Date.now();
+      if (nowMs - lastPropagationMs > 2000) {
+        updatePropagatedPositions(new Date(nowMs));
+        lastPropagationMs = nowMs;
+      }
+
+      drawScene();
+
+      quadtree = d3.quadtree(satellites, (d) => d.x, (d) => d.y);
+
+      requestAnimationFrame(animate);
+    }
+
+    function drawScene() {
+      ctx.clearRect(0, 0, logicalSize, logicalSize);
+      drawOrbits();
+      drawEarth();
+
+      for (let i = 0; i < satellites.length; i += 1) {
+        const sat = satellites[i];
+
+        ctx.beginPath();
+        ctx.fillStyle = sat.color;
+        ctx.globalAlpha = hovered && hovered.id !== sat.id ? 0.24 : 0.9;
+        ctx.arc(sat.x, sat.y, sat.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+      if (hovered) {
+        ctx.beginPath();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.4;
+        ctx.arc(hovered.x, hovered.y, hovered.size + 3.8, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    function drawOrbits() {
+      ctx.save();
+      ctx.setLineDash([4, 8]);
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--orbit').trim();
+      ctx.lineWidth = 1.2;
+
+      Object.entries(bandReferenceKm).forEach(([key, radiusKm]) => {
+        const ringRadius = radialScale(Math.min(radiusKm, MAX_PLOT_RADIUS_KM));
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(213, 225, 244, 0.46)';
+        ctx.font = '11px Space Grotesk';
+        ctx.textAlign = 'center';
+        ctx.fillText(key, center.x, center.y - ringRadius - 12);
+        ctx.setLineDash([4, 8]);
+      });
+
+      ctx.restore();
+    }
+
+    function drawEarth() {
+      const earthGradient = ctx.createRadialGradient(
+        center.x - 30,
+        center.y - 30,
+        20,
+        center.x,
+        center.y,
+        earthRadius
+      );
+      earthGradient.addColorStop(0, '#6ec8ff');
+      earthGradient.addColorStop(0.62, '#1a67d4');
+      earthGradient.addColorStop(1, '#062553');
+
+      const glowGradient = ctx.createRadialGradient(
+        center.x,
+        center.y,
+        earthRadius,
+        center.x,
+        center.y,
+        earthRadius + 40
+      );
+      glowGradient.addColorStop(0, 'rgba(105, 183, 255, 0.24)');
+      glowGradient.addColorStop(1, 'rgba(105, 183, 255, 0)');
+
+      ctx.beginPath();
+      ctx.fillStyle = glowGradient;
+      ctx.arc(center.x, center.y, earthRadius + 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillStyle = earthGradient;
+      ctx.arc(center.x, center.y, earthRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(198, 228, 255, 0.32)';
+      ctx.lineWidth = 1.6;
+      ctx.arc(center.x, center.y, earthRadius + 8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(227, 239, 255, 0.9)';
+      ctx.font = '700 22px Space Grotesk';
+      ctx.textAlign = 'center';
+      ctx.fillText('Earth', center.x, center.y + 8);
+    }
+
+    canvas.addEventListener('mousemove', (event) => {
+      if (!quadtree || satellites.length === 0) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const mx = ((event.clientX - rect.left) / rect.width) * logicalSize;
+      const my = ((event.clientY - rect.top) / rect.height) * logicalSize;
+
+      const nearest = quadtree.find(mx, my, 10);
+      hovered = nearest || null;
+
+      if (!hovered) {
+        tooltip.classList.remove('visible');
+        hoveredObjectEl.textContent = 'None';
+        return;
+      }
+
+      hoveredObjectEl.textContent = hovered.name;
+      tooltip.classList.add('visible');
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${hovered.name}</div>
+        <div class="tooltip-line"><strong>Orbit:</strong> ${hovered.orbitBand}</div>
+        <div class="tooltip-line"><strong>Type:</strong> ${hovered.category}</div>
+        <div class="tooltip-line"><strong>Operator:</strong> ${hovered.operator}</div>
+      `;
+      tooltip.style.left = `${event.clientX - rect.left}px`;
+      tooltip.style.top = `${event.clientY - rect.top}px`;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      hovered = null;
+      tooltip.classList.remove('visible');
+      hoveredObjectEl.textContent = 'None';
+    });
+  </script>
+</body>
+</html>

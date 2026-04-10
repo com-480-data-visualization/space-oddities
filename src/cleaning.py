@@ -80,4 +80,31 @@ def clean_ucs_columns(df: pd.DataFrame) -> pd.DataFrame:
         "comments",
     ]
     available = [col for col in useful_cols if col in cleaned.columns]
-    return cleaned[available]
+    cleaned = cleaned[available].copy()
+
+    # Cast potential string columns to string to avoid mixed types (e.g. numeric names)
+    # This prevents pyarrow conversion errors during parquet export.
+    string_cols = [
+        "sat_name_norm",
+        "current_official_name_of_satellite",
+        "name_of_satellite,_alternate_names",
+        "country/org_of_un_registry",
+        "purpose",
+        "detailed_purpose",
+        "country_of_operator/owner",
+        "operator/owner",
+        "users",
+        "class_of_orbit",
+        "type_of_orbit",
+        "contractor",
+        "country_of_contractor",
+        "launch_site",
+        "launch_vehicle",
+        "cospar_number",
+        "comments",
+    ]
+    for col in string_cols:
+        if col in cleaned.columns:
+            cleaned[col] = cleaned[col].astype(str).replace("nan", "").replace("None", "")
+
+    return cleaned

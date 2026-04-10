@@ -23,7 +23,7 @@ RAW_DIR = ROOT_DIR / "data" / "raw"
 PROCESSED_DIR = ROOT_DIR / "data" / "processed"
 
 # Default paths for UCS (update if location changes)
-UCS_PATH = ROOT_DIR / "milestone1_latex" / "data" / "ucs" / "UCS-Satellite-Database 5-1-2023.xlsx"
+UCS_PATH = ROOT_DIR / "milestones"/ "milestone1" / "data" / "ucs" / "UCS-Satellite-Database 5-1-2023.xlsx"
 
 
 def run_pipeline(fetch: bool = False) -> None:

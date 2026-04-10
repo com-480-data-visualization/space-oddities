@@ -14,23 +14,75 @@
 space-oddities/
 ├── data/
 │   ├── raw/             # Source files (UCS, SATCAT, TLE/CDM)
-│   ├── processed/       # Outputs from the fusion pipeline
-│   └── .gitignore       # Ignore heavy local datasets
-├── notebooks/           # EDA and experiments
-├── src/
-│   ├── fetch_data.py    # Download from Space-Track/CelesTrak
-│   ├── cleaning.py      # UCS column and name cleaning
-│   ├── merging.py       # Dataset merge logic
+│   │   ├── spacetrack/  # Data from Space-Track.org
+│   │   └── celestrak/   # Data from CelesTrak.org
+│   └── processed/       # Unified datasets (CSV and Parquet)
+├── images/              # Generated EDA plots and figures
+├── milestones/          # Project reports and milestone-specific data
+│   ├── milestone1/      # LaTeX source and report for M1
+│   └── milestone2/      # LaTeX source and report for M2
+├── notebooks/           # Jupyter notebooks for exploration
+├── src/                 # Source code
+│   ├── main.py          # Entry point for the pipeline
+│   ├── pipeline.py      # Core logic for the data flow
+│   ├── fetch_data.py    # API clients for Space-Track/CelesTrak
+│   ├── cleaning.py      # Preprocessing for UCS/SATCAT
+│   ├── merging.py       # Join logic for the unified tables
 │   └── orbit_engine.py  # SGP4 propagation utilities
-├── requirements.txt
-├── main.py              # Runs the end-to-end merge pipeline
+├── requirements.txt     # Python dependencies
 └── README.md
 ```
 
-Quick start:
+## Data Pipeline
 
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run pipeline: `python main.py`
+The project includes a unified pipeline to fetch, clean, and merge space object data.
+
+### 1. Setup
+
+1.  **Install dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  **Configure credentials** (optional, for fetching fresh data):
+    Create a `.env` file in the root directory with your Space-Track.org credentials:
+    ```env
+    SPACETRACK_USER=your_email@example.com
+    SPACETRACK_PASS=your_password
+    ```
+
+### 2. Usage
+
+The pipeline is executed via `src/main.py`.
+
+*   **Run with local data**:
+    If you already have raw JSON/CSV files in `data/raw/spacetrack/`, simply run:
+    ```bash
+    python -m src.main
+    ```
+*   **Fetch fresh data**:
+    To download the latest TLEs, SATCAT, and CDM records from the APIs:
+    ```bash
+    python -m src.main --fetch
+    ```
+
+### 3. Pipeline Steps
+
+1.  **Fetch**: Downloads bulk data from Space-Track (SATCAT, TLEs, CDMs) and CelesTrak (Active satellites).
+2.  **Clean**: Harmonizes column names, types, and handles missing values in the UCS Satellite Database.
+3.  **Merge**:
+    *   **Objects Table**: Combines UCS metadata with Space-Track SATCAT status (launch date, country, size).
+    *   **TLE Table**: Parses Two-Line Elements into a structured format for propagation.
+    *   **Conjunction Table**: Extracts collision alerts (CDMs) into a list of events.
+4.  **Export**: Saves the resulting tables to `data/processed/` in two formats:
+    *   `.csv`: For easy inspection and compatibility.
+    *   `.parquet`: For high-performance loading in the visualization dashboard.
+
+### 4. Output Datasets
+
+The pipeline generates three primary snapshots in `data/processed/`:
+- `objects.csv/parquet`: Every tracked object in orbit with its metadata.
+- `tle.csv/parquet`: Orbital elements (inclination, RAAN, mean motion) for all objects.
+- `conjunction_events.csv/parquet`: Recent predicted close approaches between satellites.
 
 ---
 

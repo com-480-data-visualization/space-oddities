@@ -81,7 +81,6 @@ def build_objects_table(ucs_df: pd.DataFrame, satcat_df: pd.DataFrame) -> pd.Dat
     if satcat_name_col:
         satcat["sat_name_norm"] = satcat[satcat_name_col].map(normalize_satellite_name)
 
-    ucs = ucs.copy()
     ucs["__ucs_row_id"] = range(len(ucs))
 
     merged = satcat.merge(ucs, on="norad_id", how="left", suffixes=("_satcat", "_ucs"))
@@ -132,9 +131,27 @@ def build_objects_table(ucs_df: pd.DataFrame, satcat_df: pd.DataFrame) -> pd.Dat
             merged["norad_id"] = pd.to_numeric(merged[fallback_norad_col], errors="coerce").astype("Int64")
 
     merged["is_ucs_matched"] = merged["__ucs_row_id"].notna()
+
+    # --- Infer Object Status ---
+    def infer_status(row):
+        if pd.notna(row.get("DECAY_DATE")) or pd.notna(row.get("decay_date")):
+            return "DECAYED"
+        obj_type = str(row.get("OBJECT_TYPE", "")).upper()
+        if obj_type in ["DEB", "DEBRIS", "R/B", "ROCKET BODY"]:
+            return "DEBRIS"
+        if row["is_ucs_matched"]:
+            return "ACTIVE"
+        ops_status = str(row.get("OPS_STATUS_CODE", "")).upper()
+        if ops_status in ["+", "P", "B"]:
+            return "ACTIVE"
+        if ops_status in ["-", "D"]:
+            return "INACTIVE"
+        return "UNKNOWN"
+
+    merged["object_status"] = merged.apply(infer_status, axis=1)
     merged = merged.drop(columns=["__ucs_row_id"], errors="ignore")
 
-    leading_cols = ["norad_id", "object_name", "match_method", "is_ucs_matched"]
+    leading_cols = ["norad_id", "object_name", "object_status", "match_method", "is_ucs_matched"]
     ordered = [col for col in leading_cols if col in merged.columns]
     trailing = [col for col in merged.columns if col not in ordered]
     return merged[ordered + trailing]
@@ -143,8 +160,12 @@ def build_objects_table(ucs_df: pd.DataFrame, satcat_df: pd.DataFrame) -> pd.Dat
 def parse_tle_gp_elements(tle_path: Path | str) -> pd.DataFrame:
     """Parse a Space-Track 3LE file into a normalized TLE/GP elements table."""
     path = Path(tle_path)
-    lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    # Detect if JSON or 3LE text
+    content = path.read_text(encoding="utf-8", errors="ignore")
+    if content.strip().startswith("["):
+        return parse_gp_json(tle_path)
 
+    lines = content.splitlines()
     rows: list[dict] = []
     i = 0
     while i < len(lines):
@@ -196,6 +217,32 @@ def parse_tle_gp_elements(tle_path: Path | str) -> pd.DataFrame:
     if not tle_df.empty:
         tle_df["norad_id"] = pd.to_numeric(tle_df["norad_id"], errors="coerce").astype("Int64")
     return tle_df
+
+
+def parse_gp_json(gp_path: Path | str) -> pd.DataFrame:
+    """Parse Space-Track GP JSON results into a normalized TLE/GP table."""
+    path = Path(gp_path)
+    records = json.loads(path.read_text(encoding="utf-8"))
+    df = pd.DataFrame(records)
+
+    if df.empty:
+        return pd.DataFrame()
+
+    out = pd.DataFrame()
+    out["norad_id"] = pd.to_numeric(df["NORAD_CAT_ID"], errors="coerce").astype("Int64")
+    out["tle_name"] = df.get("OBJECT_NAME")
+    out["element_epoch_utc"] = df.get("EPOCH")
+    out["tle_line1"] = df.get("TLE_LINE1")
+    out["tle_line2"] = df.get("TLE_LINE2")
+    out["inclination_deg"] = pd.to_numeric(df.get("INCLINATION"), errors="coerce")
+    out["raan_deg"] = pd.to_numeric(df.get("RA_OF_ASC_NODE"), errors="coerce")
+    out["eccentricity"] = pd.to_numeric(df.get("ECCENTRICITY"), errors="coerce")
+    out["arg_perigee_deg"] = pd.to_numeric(df.get("ARG_OF_PERICENTER"), errors="coerce")
+    out["mean_anomaly_deg"] = pd.to_numeric(df.get("MEAN_ANOMALY"), errors="coerce")
+    out["mean_motion_rev_day"] = pd.to_numeric(df.get("MEAN_MOTION"), errors="coerce")
+    out["rev_number_at_epoch"] = pd.to_numeric(df.get("REV_AT_EPOCH"), errors="coerce")
+
+    return out
 
 
 def build_conjunction_events(cdm_path: Path | str) -> pd.DataFrame:

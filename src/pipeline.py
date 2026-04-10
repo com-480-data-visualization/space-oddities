@@ -36,7 +36,7 @@ def run_pipeline(fetch: bool = False) -> None:
         print("--- Step 1: Fetching data from Space-Track & CelesTrak ---")
         fetch_satcat()
         fetch_gp()
-        fetch_latest_cdm(days=30)
+        fetch_latest_cdm(limit=100000, days=365)
         fetch_celestrak_satcat()
         fetch_celestrak_active_gp()
 

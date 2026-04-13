@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Oddities - Storytelling PoC</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+
+    :root {
+      --bg-0: #03050f;
+      --bg-1: #091b36;
+      --panel: rgba(8, 14, 26, 0.84);
+      --panel-border: rgba(160, 184, 217, 0.2);
+      --text: #eaf0fb;
+      --muted: #9dafcc;
+      --accent: #8ed7ff;
+      --orbit: rgba(144, 165, 196, 0.22);
+      --payload: #7dd3fc;
+      --debris: #fb7185;
+      --rocket: #fbbf24;
+      --other: #9ca3af;
+      --leo: #67e8f9;
+      --meo: #f59e0b;
+      --geo: #f472b6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--text);
+      font-family: "Space Grotesk", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(88, 169, 255, 0.16), transparent 26%),
+        radial-gradient(circle at 85% 16%, rgba(80, 120, 255, 0.1), transparent 24%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 72%);
+    }
+
+    .layout {
+      max-width: 1450px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(360px, 440px);
+      gap: 20px;
+      padding: 18px;
+    }
+
+    .scene-column {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 8px 0;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .scene-card {
+      width: 100%;
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      min-height: 0;
+    }
+
+    .top-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 0.84rem;
+      padding: 7px 11px;
+    }
+
+    .pill strong {
+      color: var(--text);
+      margin-left: 6px;
+      font-weight: 700;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      background: radial-gradient(circle at center, rgba(26, 48, 92, 0.25), rgba(4, 8, 16, 0.94));
+      flex: 1;
+      min-height: 0;
+    }
+
+    #orbitCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      min-width: 220px;
+      max-width: 280px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(6, 10, 20, 0.94);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.42);
+      opacity: 0;
+      transform: translate(-50%, -115%);
+      transition: opacity 120ms ease;
+      z-index: 2;
+    }
+
+    .tooltip.visible { opacity: 1; }
+    .tooltip-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 6px; }
+    .tooltip-line { font-size: 0.84rem; color: var(--muted); line-height: 1.45; }
+
+    .story-column {
+      position: relative;
+      padding: 8px 0;
+    }
+
+    .chapter {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 28px 0;
+    }
+
+    .chapter-card {
+      width: 100%;
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      background: rgba(7, 12, 23, 0.88);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      padding: 18px;
+      transition: transform 280ms ease, border-color 280ms ease, background 280ms ease;
+    }
+
+    .chapter.active .chapter-card {
+      border-color: rgba(142, 215, 255, 0.42);
+      background: rgba(8, 14, 26, 0.95);
+      transform: translateY(-4px);
+    }
+
+    .chapter-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .chapter h2 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.2vw, 2rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .chapter p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.55;
+    }
+
+    .slider-wrap {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .slider-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    #yearSlider { width: 100%; accent-color: var(--accent); }
+
+    .chart-wrap {
+      margin-top: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .chart-title {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chart {
+      width: 100%;
+      height: 170px;
+      display: block;
+    }
+
+    .foot {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1120px) {
+      .layout { grid-template-columns: 1fr; }
+      .scene-column {
+        position: relative;
+        height: auto;
+      }
+      .scene-card { min-height: 72vh; }
+      .chapter { min-height: auto; padding: 12px 0; }
+      .chapter-card { margin-bottom: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <section class="scene-column">
+      <div class="scene-card">
+        <div class="top-row">
+          <div class="pill">Chapter<strong id="chapterLabel">Growth Over Time</strong></div>
+          <div class="pill">Visible objects<strong id="visibleCount">0</strong></div>
+          <div class="pill">Year focus<strong id="yearLabel">-</strong></div>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="orbitCanvas" width="1000" height="1000" aria-label="Earth-centered orbit scene"></canvas>
+          <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-column">
+      <article id="chapter-growth" class="chapter active" data-chapter="growth">
+        <div class="chapter-card">
+          <div class="chapter-tag">Chapter 1</div>
+          <h2>Growth Over Time</h2>
+          <p>
+            The same orbit map tells a temporal story: as time advances, more objects appear around Earth.
+            Scroll to move through time, and use the slider for precise control.
+          </p>
+
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <span>Launch year threshold</span>
+              <strong id="yearValue">-</strong>
+            </div>
+            <input id="yearSlider" type="range" min="1957" max="2026" value="2026" step="1" />
+          </div>
+
+          <div class="chart-wrap">
+            <p class="chart-title">Yearly launches + cumulative growth</p>
+            <svg id="growthChart" class="chart" viewBox="0 0 360 170" preserveAspectRatio="none"></svg>
+          </div>
+
+          <p class="foot">
+            Scene remains fixed while chapter logic controls which objects are visible by launch year.
+          </p>
+        </div>
+      </article>
+
+      <article id="chapter-altitudes" class="chapter" data-chapter="altitudes">
+        <div class="chapter-card">
+          <div class="chapter-tag">Chapter 2</div>
+          <h2>Altitudes</h2>
+          <p>
+            The map keeps propagated positions and highlights where objects actually concentrate.
+            Hover bars to isolate LEO, MEO, or GEO directly on the same scene.
+          </p>
+
+          <div class="chart-wrap">
+            <p class="chart-title">Objects by orbit class</p>
+            <svg id="orbitClassChart" class="chart" viewBox="0 0 360 170" preserveAspectRatio="none"></svg>
+          </div>
+
+          <p class="foot">
+            Data source uses active objects with valid TLE elements; deorbited records are excluded.
+          </p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const EARTH_RADIUS_KM = 6371;
+    const MAX_PLOT_RADIUS_KM = 50000;
+    const bandReferenceKm = {
+      LEO: EARTH_RADIUS_KM + 1200,
+      MEO: EARTH_RADIUS_KM + 20200,
+      GEO: 42164,
+    };
+    const orbitBandColors = {
+      LEO: getCss('--leo'),
+      MEO: getCss('--meo'),
+      GEO: getCss('--geo'),
+    };
+
+    const categoryColors = {
+      payload: getCss('--payload'),
+      debris: getCss('--debris'),
+      'rocket body': getCss('--rocket'),
+      other: getCss('--other'),
+    };
+
+    const state = {
+      chapter: 'growth',
+      currentYear: 2026,
+      minYear: 1957,
+      maxYear: 2026,
+      hovered: null,
+      hoverBand: null,
+      lastPropagationMs: 0,
+    };
+
+    const canvas = document.getElementById('orbitCanvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const yearSlider = document.getElementById('yearSlider');
+    const yearValue = document.getElementById('yearValue');
+    const yearLabel = document.getElementById('yearLabel');
+    const chapterLabel = document.getElementById('chapterLabel');
+    const visibleCount = document.getElementById('visibleCount');
+
+    const dpi = window.devicePixelRatio || 1;
+    const logicalSize = 1000;
+    canvas.width = logicalSize * dpi;
+    canvas.height = logicalSize * dpi;
+    ctx.setTransform(dpi, 0, 0, dpi, 0, 0);
+
+    const center = { x: logicalSize / 2, y: logicalSize / 2 };
+    const earthRadius = 88;
+    const radialScale = d3.scaleSqrt().domain([0, MAX_PLOT_RADIUS_KM]).range([earthRadius + 16, 470]);
+
+    const satellites = [];
+    let quadtree = null;
+    let yearlySeries = [];
+    let cumulativeSeries = [];
+
+    init();
+
+    async function init() {
+      try {
+        const [objectRows, tleRows] = await Promise.all([
+          d3.csv('data/processed/objects.csv'),
+          d3.csv('data/processed/tle.csv'),
+        ]);
+
+        const now = new Date();
+        const cleanObjects = objectRows.filter((row) => row.norad_id && row.norad_id !== 'norad_id');
+        const activeObjects = cleanObjects.filter((row) => !isDeorbited(row, now));
+        const tleByNorad = buildTleLookup(tleRows);
+        const bound = bindSatellites(activeObjects, tleByNorad);
+
+        satellites.push(...bound);
+
+        const years = satellites.map((d) => d.launchYear).filter(Number.isFinite);
+        state.minYear = d3.min(years) || 1957;
+        state.maxYear = d3.max(years) || 2026;
+        state.currentYear = state.maxYear;
+
+        yearSlider.min = String(state.minYear);
+        yearSlider.max = String(state.maxYear);
+        yearSlider.value = String(state.currentYear);
+        yearValue.textContent = String(state.currentYear);
+        yearLabel.textContent = String(state.currentYear);
+
+        updatePropagatedPositions(now);
+        buildGrowthSeries();
+        drawGrowthChart();
+        drawOrbitClassChart();
+        setupChapterObserver();
+        setupInteractions();
+        animate();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function setupInteractions() {
+      yearSlider.addEventListener('input', () => {
+        state.currentYear = Number(yearSlider.value);
+        updateGrowthLabels();
+        drawGrowthChart();
+      });
+
+      window.addEventListener('scroll', () => {
+        if (state.chapter !== 'growth') return;
+        updateYearFromScroll();
+      }, { passive: true });
+
+      canvas.addEventListener('mousemove', onCanvasMove);
+      canvas.addEventListener('mouseleave', () => {
+        state.hovered = null;
+        tooltip.classList.remove('visible');
+      });
+    }
+
+    function setupChapterObserver() {
+      const chapters = document.querySelectorAll('.chapter');
+      const observer = new IntersectionObserver((entries) => {
+        for (let i = 0; i < entries.length; i += 1) {
+          const entry = entries[i];
+          if (!entry.isIntersecting) continue;
+          const chapter = entry.target.dataset.chapter;
+          setChapter(chapter);
+        }
+      }, { threshold: 0.52 });
+
+      chapters.forEach((node) => observer.observe(node));
+    }
+
+    function setChapter(chapter) {
+      if (state.chapter === chapter) return;
+      state.chapter = chapter;
+
+      document.querySelectorAll('.chapter').forEach((node) => {
+        node.classList.toggle('active', node.dataset.chapter === chapter);
+      });
+
+      chapterLabel.textContent = chapter === 'growth' ? 'Growth Over Time' : 'Altitudes';
+      if (chapter === 'growth') {
+        updateYearFromScroll();
+      }
+      drawGrowthChart();
+    }
+
+    function updateYearFromScroll() {
+      const section = document.getElementById('chapter-growth');
+      const rect = section.getBoundingClientRect();
+      const total = Math.max(rect.height - window.innerHeight, 1);
+      const progress = clamp((-rect.top) / total, 0, 1);
+      const year = Math.round(state.minYear + progress * (state.maxYear - state.minYear));
+      state.currentYear = year;
+      yearSlider.value = String(year);
+      updateGrowthLabels();
+      drawGrowthChart();
+    }
+
+    function buildTleLookup(rows) {
+      const map = new Map();
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i];
+        const noradId = String(row.norad_id || '').trim();
+        if (!noradId || noradId === 'norad_id') continue;
+        if (!row.tle_line1 || !row.tle_line2) continue;
+        map.set(noradId, row);
+      }
+      return map;
+    }
+
+    function bindSatellites(rows, tleByNorad) {
+      return d3.map(rows, (row, idx) => {
+        const noradId = String(row.norad_id || '').trim();
+        const tle = tleByNorad.get(noradId);
+        if (!tle) return null;
+
+        const satrec = satellite.twoline2satrec(tle.tle_line1, tle.tle_line2);
+        if (!satrec || satrec.error) return null;
+
+        return {
+          id: noradId || `obj-${idx}`,
+          name: row.OBJECT_NAME || row.object_name || 'Unknown object',
+          operator: row['operator/owner'] || row.OWNER || 'Unknown operator',
+          category: normalizeCategory(row),
+          launchYear: parseLaunchYear(row),
+          satrec,
+          orbitBand: 'LEO',
+          xyKm: 0,
+          geoKm: 0,
+          x: center.x,
+          y: center.y,
+          size: 1.9,
+        };
+      }).filter(Boolean);
+    }
+
+    function normalizeCategory(row) {
+      const token = `${row.object_type_simplified || ''} ${row.OBJECT_TYPE || ''}`.toUpperCase();
+      if (token.includes('DEB')) return 'debris';
+      if (token.includes('R/B') || token.includes('ROCKET')) return 'rocket body';
+      if (token.includes('PAY') || token.trim() === 'P') return 'payload';
+      return 'other';
+    }
+
+    function parseLaunchYear(row) {
+      const raw = String(row.LAUNCH_DATE || row.date_of_launch || '').trim();
+      if (!raw) return NaN;
+      const candidate = raw.slice(0, 4);
+      const year = Number(candidate);
+      return Number.isFinite(year) ? year : NaN;
+    }
+
+    function inferOrbitBandFromAltitude(altKm) {
+      if (!Number.isFinite(altKm)) return 'LEO';
+      if (altKm < 2000) return 'LEO';
+      if (altKm < 35786) return 'MEO';
+      return 'GEO';
+    }
+
+    function isDeorbited(row, now) {
+      const status = String(row.OPS_STATUS_CODE || '').trim().toUpperCase();
+      if (status === 'D') return true;
+
+      const decayRaw = String(row.DECAY_DATE || '').trim();
+      if (!decayRaw) return false;
+      const decayDate = new Date(decayRaw);
+      if (Number.isNaN(decayDate.getTime())) return false;
+      return decayDate <= now;
+    }
+
+    function updatePropagatedPositions(when) {
+      for (let i = 0; i < satellites.length; i += 1) {
+        const sat = satellites[i];
+        const propagation = satellite.propagate(sat.satrec, when);
+        if (!propagation || !propagation.position) continue;
+
+        const pos = propagation.position;
+        sat.xyKm = Math.sqrt((pos.x * pos.x) + (pos.y * pos.y));
+        sat.geoKm = Math.sqrt((pos.x * pos.x) + (pos.y * pos.y) + (pos.z * pos.z));
+        sat.orbitBand = inferOrbitBandFromAltitude(sat.geoKm - EARTH_RADIUS_KM);
+
+        const angle = Math.atan2(pos.y, pos.x);
+        const realR = radialScale(Math.min(sat.xyKm, MAX_PLOT_RADIUS_KM));
+        sat.x = center.x + Math.cos(angle) * realR;
+        sat.y = center.y + Math.sin(angle) * realR;
+      }
+    }
+
+    function buildGrowthSeries() {
+      const validYears = satellites
+        .map((d) => d.launchYear)
+        .filter(Number.isFinite)
+        .sort((a, b) => a - b);
+
+      const byYear = d3.rollups(validYears, (v) => v.length, (d) => d)
+        .sort((a, b) => a[0] - b[0]);
+
+      let running = 0;
+      yearlySeries = byYear.map(([year, count]) => ({ year, count }));
+      cumulativeSeries = yearlySeries.map((d) => {
+        running += d.count;
+        return { year: d.year, count: running };
+      });
+    }
+
+    function updateGrowthLabels() {
+      yearValue.textContent = String(state.currentYear);
+      yearLabel.textContent = state.chapter === 'growth' ? String(state.currentYear) : 'All years';
+    }
+
+    function drawGrowthChart() {
+      const svg = d3.select('#growthChart');
+      const width = 360;
+      const height = 170;
+      const margin = { top: 8, right: 8, bottom: 22, left: 30 };
+
+      svg.selectAll('*').remove();
+      if (yearlySeries.length === 0) return;
+
+      const x = d3.scaleLinear()
+        .domain([state.minYear, state.maxYear])
+        .range([margin.left, width - margin.right]);
+
+      const yLaunch = d3.scaleLinear()
+        .domain([0, d3.max(yearlySeries, (d) => d.count) || 1])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+
+      const yCum = d3.scaleLinear()
+        .domain([0, d3.max(cumulativeSeries, (d) => d.count) || 1])
+        .nice()
+        .range([height - margin.bottom, margin.top]);
+
+      const line = d3.line()
+        .x((d) => x(d.year))
+        .y((d) => yLaunch(d.count))
+        .curve(d3.curveMonotoneX);
+
+      const area = d3.area()
+        .x((d) => x(d.year))
+        .y0(height - margin.bottom)
+        .y1((d) => yCum(d.count))
+        .curve(d3.curveMonotoneX);
+
+      svg.append('path')
+        .datum(cumulativeSeries)
+        .attr('d', area)
+        .attr('fill', 'rgba(142, 215, 255, 0.18)');
+
+      svg.append('path')
+        .datum(yearlySeries)
+        .attr('d', line)
+        .attr('fill', 'none')
+        .attr('stroke', '#8ed7ff')
+        .attr('stroke-width', 1.7);
+
+      const focusYear = clamp(state.currentYear, state.minYear, state.maxYear);
+      svg.append('line')
+        .attr('x1', x(focusYear))
+        .attr('x2', x(focusYear))
+        .attr('y1', margin.top)
+        .attr('y2', height - margin.bottom)
+        .attr('stroke', '#f8fafc')
+        .attr('stroke-opacity', state.chapter === 'growth' ? 0.85 : 0.22)
+        .attr('stroke-dasharray', '4 5');
+
+      const years = [state.minYear, Math.round((state.minYear + state.maxYear) / 2), state.maxYear];
+      svg.selectAll('text.x-tick')
+        .data(years)
+        .join('text')
+        .attr('x', (d) => x(d))
+        .attr('y', height - 6)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 10)
+        .attr('fill', '#9dafcc')
+        .text((d) => d);
+    }
+
+    function drawOrbitClassChart() {
+      const data = d3.rollups(satellites, (v) => v.length, (d) => d.orbitBand)
+        .sort((a, b) => d3.ascending(a[0], b[0]))
+        .map(([label, value]) => ({ label, value }));
+
+      const svg = d3.select('#orbitClassChart');
+      const width = 360;
+      const height = 170;
+      const margin = { top: 8, right: 8, bottom: 24, left: 8 };
+
+      const x = d3.scaleBand().domain(data.map((d) => d.label)).range([margin.left, width - margin.right]).padding(0.35);
+      const y = d3.scaleLinear().domain([0, d3.max(data, (d) => d.value) || 1]).nice().range([height - margin.bottom, margin.top]);
+
+      svg.selectAll('*').remove();
+
+      svg.selectAll('rect.bar')
+        .data(data)
+        .join('rect')
+        .attr('class', 'bar')
+        .attr('x', (d) => x(d.label))
+        .attr('y', (d) => y(d.value))
+        .attr('width', x.bandwidth())
+        .attr('height', (d) => y(0) - y(d.value))
+        .attr('fill', (d) => orbitBandColors[d.label])
+        .attr('rx', 4)
+        .attr('opacity', 0.92)
+        .on('mouseenter', (event, d) => {
+          state.hoverBand = d.label;
+        })
+        .on('mouseleave', () => {
+          state.hoverBand = null;
+        });
+
+      svg.selectAll('text.tick')
+        .data(data)
+        .join('text')
+        .attr('x', (d) => x(d.label) + x.bandwidth() / 2)
+        .attr('y', height - 8)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', 11)
+        .attr('fill', '#9dafcc')
+        .text((d) => d.label);
+    }
+
+    function animate() {
+      const nowMs = Date.now();
+      if (nowMs - state.lastPropagationMs > 2000) {
+        updatePropagatedPositions(new Date(nowMs));
+        state.lastPropagationMs = nowMs;
+      }
+
+      drawScene();
+      requestAnimationFrame(animate);
+    }
+
+    function drawScene() {
+      ctx.clearRect(0, 0, logicalSize, logicalSize);
+      drawOrbits();
+      drawEarth();
+
+      const rendered = [];
+      for (let i = 0; i < satellites.length; i += 1) {
+        const sat = satellites[i];
+        if (!isVisibleInChapter(sat)) continue;
+
+        const color = getSatelliteColor(sat);
+        const alpha = getSatelliteAlpha(sat);
+
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.globalAlpha = alpha;
+        ctx.arc(sat.x, sat.y, sat.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        rendered.push(sat);
+      }
+
+      ctx.globalAlpha = 1;
+      quadtree = d3.quadtree(rendered, (d) => d.x, (d) => d.y);
+      visibleCount.textContent = rendered.length.toLocaleString();
+
+      if (state.hovered && isVisibleInChapter(state.hovered)) {
+        ctx.beginPath();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.4;
+        ctx.arc(state.hovered.x, state.hovered.y, state.hovered.size + 3.8, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    function isVisibleInChapter(sat) {
+      if (state.chapter === 'growth') {
+        return Number.isFinite(sat.launchYear) && sat.launchYear <= state.currentYear;
+      }
+      return true;
+    }
+
+    function getSatelliteColor(sat) {
+      if (state.chapter === 'altitudes') {
+        return orbitBandColors[sat.orbitBand];
+      }
+      return categoryColors[sat.category] || categoryColors.other;
+    }
+
+    function getSatelliteAlpha(sat) {
+      if (state.chapter === 'altitudes' && state.hoverBand && sat.orbitBand !== state.hoverBand) {
+        return 0.12;
+      }
+      if (state.hovered && state.hovered.id !== sat.id) {
+        return 0.24;
+      }
+      return state.chapter === 'growth' ? 0.84 : 0.9;
+    }
+
+    function drawOrbits() {
+      ctx.save();
+      ctx.setLineDash([4, 8]);
+      ctx.strokeStyle = getCss('--orbit');
+      ctx.lineWidth = 1.2;
+
+      Object.entries(bandReferenceKm).forEach(([key, radiusKm]) => {
+        const ringRadius = radialScale(Math.min(radiusKm, MAX_PLOT_RADIUS_KM));
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = state.chapter === 'altitudes' ? orbitBandColors[key] : 'rgba(220, 232, 246, 0.46)';
+        ctx.font = '11px Space Grotesk';
+        ctx.textAlign = 'center';
+        ctx.fillText(key, center.x, center.y - ringRadius - 12);
+        ctx.setLineDash([4, 8]);
+      });
+
+      ctx.restore();
+    }
+
+    function drawEarth() {
+      const earthGradient = ctx.createRadialGradient(center.x - 30, center.y - 30, 20, center.x, center.y, earthRadius);
+      earthGradient.addColorStop(0, '#6ec8ff');
+      earthGradient.addColorStop(0.62, '#1a67d4');
+      earthGradient.addColorStop(1, '#062553');
+
+      const glowGradient = ctx.createRadialGradient(center.x, center.y, earthRadius, center.x, center.y, earthRadius + 40);
+      glowGradient.addColorStop(0, 'rgba(105, 183, 255, 0.24)');
+      glowGradient.addColorStop(1, 'rgba(105, 183, 255, 0)');
+
+      ctx.beginPath();
+      ctx.fillStyle = glowGradient;
+      ctx.arc(center.x, center.y, earthRadius + 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillStyle = earthGradient;
+      ctx.arc(center.x, center.y, earthRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(198, 228, 255, 0.32)';
+      ctx.lineWidth = 1.6;
+      ctx.arc(center.x, center.y, earthRadius + 8, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(227, 239, 255, 0.9)';
+      ctx.font = '700 22px Space Grotesk';
+      ctx.textAlign = 'center';
+      ctx.fillText('Earth', center.x, center.y + 8);
+    }
+
+    function onCanvasMove(event) {
+      if (!quadtree) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = ((event.clientX - rect.left) / rect.width) * logicalSize;
+      const my = ((event.clientY - rect.top) / rect.height) * logicalSize;
+      const nearest = quadtree.find(mx, my, 10);
+      state.hovered = nearest || null;
+
+      if (!state.hovered) {
+        tooltip.classList.remove('visible');
+        return;
+      }
+
+      tooltip.classList.add('visible');
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${state.hovered.name}</div>
+        <div class="tooltip-line"><strong>Orbit:</strong> ${state.hovered.orbitBand}</div>
+        <div class="tooltip-line"><strong>Type:</strong> ${state.hovered.category}</div>
+        <div class="tooltip-line"><strong>Launch year:</strong> ${Number.isFinite(state.hovered.launchYear) ? state.hovered.launchYear : 'Unknown'}</div>
+      `;
+      tooltip.style.left = `${event.clientX - rect.left}px`;
+      tooltip.style.top = `${event.clientY - rect.top}px`;
+    }
+
+    function getCss(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+  </script>
+</body>
+</html>

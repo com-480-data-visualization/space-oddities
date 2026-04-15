@@ -54,9 +54,11 @@ These features will enhance the depth of the project but can be dropped if neces
 
 \textbf{Tools to be used:}
 \begin{itemize}
-    \item \textbf{D3.js:} For linked statistical charts and scrollytelling triggers.
-    \item \textbf{Three.js / WebGL:} To render the massive SATCAT dataset (68,000+ points) efficiently.
-    \item \textbf{Python (Skyfield/SGP4):} For preprocessing raw TLE formats into altitude and inclination metrics.
+    \item \textbf{React (Vite):} Component-based frontend framework for structuring the scrollytelling website into reusable components (scene panel, chapter cards, navigation). Vite is used as the build tool for fast HMR in development and optimised production bundles.
+    \item \textbf{Mantine:} React component library providing accessible UI primitives (badges, dividers, layout helpers) without requiring a utility-CSS framework.
+    \item \textbf{D3.js:} For linked statistical charts (cumulative launch area chart, operator bar chart, debris pie/donut chart, CDM scatter plot) and the scroll-driven year animation.
+    \item \textbf{Three.js / WebGL:} To render the full SATCAT dataset (68,000+ points) as an interactive 3D orbital globe, and to draw the covariance error-tube visualisation in Chapter~6.
+    \item \textbf{Python (Skyfield / SGP4):} For preprocessing raw TLE formats into altitude, inclination, and orbit-class metrics consumed by the front-end.
 \end{itemize}
 
 \textbf{Relevant COM-480 Lectures:}

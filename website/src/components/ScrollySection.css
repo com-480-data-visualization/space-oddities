@@ -1,0 +1,129 @@
+.scrolly {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+  align-items: start;
+}
+
+.scrolly-scene {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+}
+
+.scene-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  min-height: 0;
+}
+
+.scene-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.scene-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.scene-chapter {
+  color: var(--accent);
+}
+
+.scene-panel > .vizbox:last-child {
+  flex: 1;
+  min-height: 0;
+}
+
+.scrolly-story {
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.control-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.year-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-btn {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.scrolly-solo {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+.side-by-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 1000px) {
+  .scrolly {
+    grid-template-columns: 1fr;
+  }
+  .scrolly-scene {
+    position: relative;
+    top: 0;
+    height: 60vh;
+  }
+  .side-by-side {
+    grid-template-columns: 1fr;
+  }
+}

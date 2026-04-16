@@ -1,0 +1,71 @@
+.sat-card {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+
+.sat-card--cyan  { border-color: rgba(103, 232, 249, 0.25); }
+.sat-card--amber { border-color: rgba(251, 191, 36, 0.25); }
+
+.sat-card-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.sat-card--cyan  .sat-card-label { color: #67e8f9; }
+.sat-card--amber .sat-card-label { color: #fbbf24; }
+
+.sat-card-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sat-card-name--empty {
+  color: #64748b;
+}
+
+.sat-card-fields {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sat-field {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.sat-field dt {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.sat-field dd {
+  margin: 0;
+  color: #9dafcc;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty state skeleton line */
+.sat-field-empty {
+  width: 60px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+}

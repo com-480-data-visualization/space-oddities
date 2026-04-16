@@ -29,8 +29,8 @@ export default function Hero() {
             <span className="stat-label">CDM alerts</span>
           </div>
           <div className="stat">
-            <span className="stat-value">385 m</span>
-            <span className="stat-label">closest approach</span>
+            <span className="stat-value">1,046</span>
+            <span className="stat-label">at-risk satellite pairs</span>
           </div>
         </div>
         <a href="#chapter-1" className="hero-cta">Start exploring ↓</a>

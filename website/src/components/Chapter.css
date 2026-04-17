@@ -1,0 +1,33 @@
+.chapter {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.chapter-card {
+  width: 100%;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: border-color 0.25s;
+}
+
+.chapter--active .chapter-card {
+  border-color: var(--accent);
+}
+
+.chapter-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0.75rem;
+  color: var(--text);
+}
+
+.chapter-body {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 1rem;
+}

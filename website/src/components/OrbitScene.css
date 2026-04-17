@@ -1,0 +1,52 @@
+.orbit-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: radial-gradient(circle at center, rgba(26, 48, 92, 0.25), rgba(4, 8, 16, 0.94));
+}
+
+.orbit-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.orbit-tooltip {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 10px 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(6, 10, 22, 0.92);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  min-width: 180px;
+}
+
+.ot-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #eaf0fb;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.ot-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #9dafcc;
+  line-height: 1.5;
+}
+
+.ot-line span {
+  opacity: 0.65;
+}

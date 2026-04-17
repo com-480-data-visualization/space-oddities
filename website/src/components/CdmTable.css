@@ -1,0 +1,226 @@
+.cdm-table-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+  min-height: 0;
+}
+
+.cdm-table-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.cdm-table-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8ed7ff;
+}
+
+.cdm-table-count {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Filters */
+.cdm-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cdm-search {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #e2e8f0;
+  outline: none;
+}
+
+.cdm-search::placeholder {
+  color: #64748b;
+}
+
+.cdm-search:focus {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.cdm-range-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #9dafcc;
+}
+
+.cdm-range-value {
+  color: #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdm-range-slider {
+  width: 100%;
+  accent-color: #38bdf8;
+}
+
+/* Table */
+.cdm-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Custom scrollbar */
+.cdm-table-wrap::-webkit-scrollbar {
+  width: 4px;
+}
+.cdm-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cdm-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+.cdm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.cdm-table thead th {
+  position: sticky;
+  top: 0;
+  background: rgba(8, 14, 26, 0.96);
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.cdm-table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.cdm-table thead th.sortable:hover {
+  color: #9dafcc;
+}
+
+.sort-neutral { opacity: 0.35; margin-left: 3px; }
+.sort-active  { color: #38bdf8; margin-left: 3px; }
+
+.cdm-row {
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 120ms ease;
+}
+
+.cdm-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cdm-row--selected {
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.cdm-row--selected:hover {
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.cdm-table td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  color: #9dafcc;
+}
+
+/* Satellite names column */
+.col-sats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.sat-name--1 { color: #67e8f9; font-size: 0.78rem; }
+.sat-name--2 { color: #fbbf24; font-size: 0.78rem; }
+.sat-sep { display: none; } /* kept for screen-reader separation */
+
+/* Range column — colour-coded by severity */
+.range-critical { color: #fb7185; font-weight: 600; }
+.range-warning  { color: #fbbf24; }
+.range-ok       { color: #9dafcc; }
+
+.col-tca {
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.col-pc {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cdm-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 24px 0;
+}
+
+/* Selected CDM footer note */
+.cdm-selected-sep {
+  color: #64748b;
+}
+
+.cdm-selected-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: #9dafcc;
+  padding: 8px 10px;
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.cdm-selected-note strong {
+  color: #e2e8f0;
+}
+
+.cdm-clear {
+  margin-left: auto;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-family: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.cdm-clear:hover {
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.25);
+}

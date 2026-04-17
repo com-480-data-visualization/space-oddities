@@ -1,0 +1,23 @@
+.vizbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+.vizbox-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.vizbox-note {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}

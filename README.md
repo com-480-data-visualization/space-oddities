@@ -227,6 +227,7 @@ To bridge the gap between complex orbital mechanics and intuitive storytelling, 
 
   ## Milestone 2
 A pdf version of the Milestone 2 report can be found [here](./milestones/milestone2/Space_Oddities_Milestone_2.pdf)
+
 The website prototype for Milestone 2 can be found [here](https://com-480-data-visualization.github.io/space-oddities/)
 
 ---

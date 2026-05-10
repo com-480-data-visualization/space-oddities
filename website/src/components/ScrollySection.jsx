@@ -54,20 +54,6 @@ export default function ScrollySection() {
     return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
-    function onScroll() {
-      if (active !== 'chapter-1') return
-      const section = document.getElementById('chapter-1')
-      if (!section) return
-      const rect = section.getBoundingClientRect()
-      const total = Math.max(rect.height - window.innerHeight, 1)
-      const progress = Math.max(0, Math.min(1, (-rect.top) / total))
-      setCurrentYear(Math.round(minYear + progress * (maxYear - minYear)))
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [active, minYear, maxYear])
-
   const handleSlider = useCallback(e => setCurrentYear(Number(e.target.value)), [])
 
   const visibleCount = satellites.filter(sat => {
@@ -112,7 +98,7 @@ export default function ScrollySection() {
             id="chapter-1"
             number={1}
             title="The Exponential Growth"
-            body="The same orbit map tells a temporal story: as time advances, more objects appear around Earth. Scroll to move through time, or drag the slider for precise control."
+            body="The same orbit map tells a temporal story: as time advances, more objects appear around Earth. Drag the slider to move through launch history."
             isActive={active === 'chapter-1'}
           >
             <div className="chapter-control">

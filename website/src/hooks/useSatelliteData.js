@@ -6,7 +6,7 @@ const EARTH_RADIUS_KM = 6371
 const BASE = import.meta.env.BASE_URL
 
 function normalizeCategory(row) {
-  const token = `${row.object_type_simplified || ''} ${row.OBJECT_TYPE || ''}`.toUpperCase()
+  const token = String(row.OBJECT_TYPE || '').toUpperCase()
   if (token.includes('DEB')) return 'debris'
   if (token.includes('R/B') || token.includes('ROCKET')) return 'rocket body'
   if (token.includes('PAY') || token.trim() === 'P') return 'payload'
@@ -14,16 +14,14 @@ function normalizeCategory(row) {
 }
 
 function parseLaunchYear(row) {
-  const raw = String(row.LAUNCH_DATE || row.date_of_launch || '').trim()
+  const raw = String(row.LAUNCH_YEAR || row.LAUNCH || row.date_of_launch || '').trim()
   if (!raw) return NaN
   const year = Number(raw.slice(0, 4))
   return Number.isFinite(year) ? year : NaN
 }
 
 function isDeorbited(row, now) {
-  const status = String(row.OPS_STATUS_CODE || '').trim().toUpperCase()
-  if (status === 'D') return true
-  const decayRaw = String(row.DECAY_DATE || '').trim()
+  const decayRaw = String(row.DECAY || '').trim()
   if (!decayRaw) return false
   const d = new Date(decayRaw)
   if (Number.isNaN(d.getTime())) return false
@@ -71,7 +69,7 @@ export function useSatelliteData() {
           sats.push({
             id: noradId,
             name: row.OBJECT_NAME || row.object_name || 'Unknown',
-            operator: row['operator/owner'] || row.OWNER || 'Unknown',
+            operator: row['operator/owner'] || 'Unknown',
             category: normalizeCategory(row),
             launchYear: parseLaunchYear(row),
             satrec,

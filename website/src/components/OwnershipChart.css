@@ -1,0 +1,73 @@
+.ownership-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ownership-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.ownership-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9dafcc;
+}
+
+.ownership-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.36rem;
+}
+
+.ownership-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) 120px 42px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+  color: #9dafcc;
+  cursor: pointer;
+}
+
+.ownership-row:hover,
+.ownership-row--active {
+  color: #e2e8f0;
+}
+
+.ownership-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ownership-track {
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ownership-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #38bdf8;
+}
+
+.ownership-group--operator .ownership-fill {
+  background: #f59e0b;
+}
+
+.ownership-row--active .ownership-track {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.ownership-value {
+  text-align: right;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}

@@ -19,7 +19,8 @@
 
 .navbar-links {
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
   list-style: none;
   margin: 0;
   padding: 0;

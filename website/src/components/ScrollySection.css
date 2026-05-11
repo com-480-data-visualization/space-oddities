@@ -8,7 +8,7 @@
   align-items: start;
 }
 
-/* Chapters 5 & 6 and Chapter 4 use an equal split */
+/* Later scrolly sections use an equal split. */
 .scrolly--half {
   grid-template-columns: 1fr 1fr;
 }

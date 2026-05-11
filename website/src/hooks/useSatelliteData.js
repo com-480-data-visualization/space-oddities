@@ -5,6 +5,35 @@ import * as satellite from 'satellite.js'
 const EARTH_RADIUS_KM = 6371
 const BASE = import.meta.env.BASE_URL
 
+const COUNTRY_LABELS = {
+  US: 'USA',
+  USA: 'USA',
+  PRC: 'China',
+  China: 'China',
+  CIS: 'Russia / USSR',
+  Russia: 'Russia / USSR',
+  UK: 'United Kingdom',
+  'United Kingdom': 'United Kingdom',
+  FR: 'France',
+  France: 'France',
+  JPN: 'Japan',
+  Japan: 'Japan',
+  IND: 'India',
+  India: 'India',
+  IT: 'Italy',
+  Italy: 'Italy',
+  GER: 'Germany',
+  Germany: 'Germany',
+  CA: 'Canada',
+  Canada: 'Canada',
+  SPN: 'Spain',
+  Spain: 'Spain',
+  SKOR: 'South Korea',
+  'South Korea': 'South Korea',
+  TBD: 'Unknown',
+  NR: 'Unknown',
+}
+
 function normalizeCategory(row) {
   const token = String(row.OBJECT_TYPE || '').toUpperCase()
   if (token.includes('DEB')) return 'debris'
@@ -26,6 +55,17 @@ function isDeorbited(row, now) {
   const d = new Date(decayRaw)
   if (Number.isNaN(d.getTime())) return false
   return d <= now
+}
+
+function cleanLabel(value) {
+  const label = String(value || '').trim()
+  return label || 'Unknown'
+}
+
+function cleanCountry(row) {
+  const raw = cleanLabel(row['country/org_of_un_registry'] || row.COUNTRY)
+  if (raw.startsWith('NR ')) return 'Unknown'
+  return COUNTRY_LABELS[raw] || raw
 }
 
 function inferOrbitBand(altKm) {
@@ -69,7 +109,8 @@ export function useSatelliteData() {
           sats.push({
             id: noradId,
             name: row.OBJECT_NAME || row.object_name || 'Unknown',
-            operator: row['operator/owner'] || 'Unknown',
+            country: cleanCountry(row),
+            operator: cleanLabel(row['operator/owner']),
             category: normalizeCategory(row),
             launchYear: parseLaunchYear(row),
             satrec,

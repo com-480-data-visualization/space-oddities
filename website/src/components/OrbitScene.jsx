@@ -40,7 +40,14 @@ function isVisible(sat, chapter, currentYear) {
   return true
 }
 
-export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand }) {
+function matchesOwnership(sat, highlight) {
+  if (!highlight) return false
+  return highlight.kind === 'country'
+    ? sat.country === highlight.value
+    : sat.operator === highlight.value
+}
+
+export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand, ownershipHighlight }) {
   const canvasRef = useRef(null)
   const hoveredRef = useRef(null)
   const quadtreeRef = useRef(null)
@@ -125,17 +132,28 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
       sat.cx = center.x + Math.cos(angle) * r
       sat.cy = center.y + Math.sin(angle) * r
 
-      const color = activeChapter === 'altitudes'
-        ? (ORBIT_BAND_COLORS[sat.orbitBand] ?? ORBIT_BAND_COLORS.LEO)
-        : (CATEGORY_COLORS[sat.category] ?? CATEGORY_COLORS.other)
+      let color
+      if (activeChapter === 'altitudes') {
+        color = ORBIT_BAND_COLORS[sat.orbitBand] ?? ORBIT_BAND_COLORS.LEO
+      } else if (activeChapter === 'ownership') {
+        color = ownershipHighlight && matchesOwnership(sat, ownershipHighlight)
+          ? (ownershipHighlight.kind === 'country' ? '#38bdf8' : '#f59e0b')
+          : '#9ca3af'
+      } else {
+        color = CATEGORY_COLORS[sat.category] ?? CATEGORY_COLORS.other
+      }
 
       let alpha
       if (activeChapter === 'altitudes' && hoverBand && sat.orbitBand !== hoverBand) {
         alpha = 0.1
+      } else if (activeChapter === 'ownership' && ownershipHighlight && !matchesOwnership(sat, ownershipHighlight)) {
+        alpha = 0.04
       } else if (hovered && hovered.id !== sat.id) {
         alpha = 0.22
       } else {
-        alpha = activeChapter === 'altitudes' ? 0.9 : 0.82
+        alpha = activeChapter === 'ownership' && !ownershipHighlight
+          ? 0.42
+          : activeChapter === 'altitudes' ? 0.9 : 0.82
       }
 
       ctx.beginPath()
@@ -157,7 +175,7 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
     }
 
     quadtreeRef.current = d3.quadtree(rendered, d => d.cx, d => d.cy)
-  }, [satellites, activeChapter, currentYear, hoverBand])
+  }, [satellites, activeChapter, currentYear, hoverBand, ownershipHighlight])
 
   // animation loop
   useEffect(() => {
@@ -209,6 +227,8 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
           <div className="ot-name">{tooltip.sat.name}</div>
           <div className="ot-line"><span>Orbit</span>{tooltip.sat.orbitBand}</div>
           <div className="ot-line"><span>Type</span>{tooltip.sat.category}</div>
+          <div className="ot-line"><span>Country</span>{tooltip.sat.country}</div>
+          <div className="ot-line"><span>Operator</span>{tooltip.sat.operator}</div>
           <div className="ot-line">
             <span>Launched</span>
             {Number.isFinite(tooltip.sat.launchYear) ? tooltip.sat.launchYear : '—'}

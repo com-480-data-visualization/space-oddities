@@ -4,13 +4,14 @@ import Chapter from './Chapter'
 import OrbitScene from './OrbitScene'
 import GrowthChart from './GrowthChart'
 import OrbitClassChart from './OrbitClassChart'
+import OwnershipChart from './OwnershipChart'
 import CdmTable from './CdmTable'
 import SatelliteCard from './SatelliteCard'
 import VizBox from './VizBox'
 import { useSatelliteData } from '../hooks/useSatelliteData'
 import './ScrollySection.css'
 
-const CHAPTER_IDS = ['chapter-1', 'chapter-2', 'chapter-3', 'chapter-4', 'chapter-5', 'chapter-6']
+const CHAPTER_IDS = ['chapter-1', 'chapter-2', 'chapter-3', 'chapter-4', 'chapter-5', 'chapter-6', 'chapter-7']
 
 const KESSLER_EVENTS = [
   { id: 'cerise',   year: 1996, name: 'Cerise × Ariane debris',          debrisAdded: 'minor fragmentation' },
@@ -24,13 +25,25 @@ const DEBRIS_SIZE_FILTERS = ['>1 mm', '>1 cm', '>10 cm', '>1 m']
 
 function sceneChapter(id) {
   if (id === 'chapter-1') return 'growth'
+  if (id === 'chapter-2') return 'altitudes'
+  if (id === 'chapter-3') return 'ownership'
+  if (id === 'chapter-4') return 'types'
   return 'altitudes'
+}
+
+function sceneLabel(id) {
+  if (id === 'chapter-1') return 'Growth Over Time'
+  if (id === 'chapter-2') return 'Altitudes'
+  if (id === 'chapter-3') return 'Ownership'
+  if (id === 'chapter-4') return 'Object Types'
+  return 'Altitudes'
 }
 
 export default function ScrollySection() {
   const [active, setActive] = useState('chapter-1')
   const [currentYear, setCurrentYear] = useState(2026)
   const [hoverBand, setHoverBand] = useState(null)
+  const [ownershipHighlight, setOwnershipHighlight] = useState(null)
   const [selectedCdm, setSelectedCdm] = useState(null)
   const [hoveredEvent, setHoveredEvent] = useState(null)
   const [debrisSizeFilter, setDebrisSizeFilter] = useState('>10 cm')
@@ -55,6 +68,11 @@ export default function ScrollySection() {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    if (active !== 'chapter-2') setHoverBand(null)
+    if (active !== 'chapter-3') setOwnershipHighlight(null)
+  }, [active])
+
   const handleSlider = useCallback(e => setCurrentYear(Number(e.target.value)), [])
 
   const visibleCount = satellites.filter(sat => {
@@ -68,13 +86,13 @@ export default function ScrollySection() {
 
   return (
     <>
-      {/* Chapters 1–3: orbit scene (sticky) + story */}
+      {/* Chapters 1–4: orbit scene (sticky) + story */}
       <section className="scrolly">
         <div className="scrolly-scene">
           <div className="scene-panel">
             <div className="scene-header">
               <span className="scene-label">
-                {sceneChapter(active) === 'growth' ? 'Growth Over Time' : 'Altitudes'}
+                {sceneLabel(active)}
               </span>
               <span className="scene-stats">
                 {loading ? 'Loading…' : <><strong>{visibleCount.toLocaleString()}</strong> objects</>}
@@ -88,6 +106,7 @@ export default function ScrollySection() {
                     activeChapter={sceneChapter(active)}
                     currentYear={currentYear}
                     hoverBand={hoverBand}
+                    ownershipHighlight={ownershipHighlight}
                   />
               }
             </div>
@@ -150,9 +169,23 @@ export default function ScrollySection() {
           <Chapter
             id="chapter-3"
             number={3}
+            title="Who Owns Orbit?"
+            body="Orbital space is not evenly shared. A few countries and operators account for much of the current population. Hover a bar to isolate that group on the map."
+            isActive={active === 'chapter-3'}
+          >
+            <OwnershipChart
+              satellites={satellites}
+              highlight={ownershipHighlight}
+              onHighlight={setOwnershipHighlight}
+            />
+          </Chapter>
+
+          <Chapter
+            id="chapter-4"
+            number={4}
             title="Payloads vs. Debris"
             body="Of the tracked objects, only a fraction are active satellites. The rest are debris, spent rocket bodies, and fragments — a growing cloud of abandoned hardware surrounding Earth."
-            isActive={active === 'chapter-3'}
+            isActive={active === 'chapter-4'}
           >
             <div className="filter-row">
               {['All objects', 'Payloads only', 'Debris only', 'Rocket bodies'].map(label => (
@@ -168,14 +201,14 @@ export default function ScrollySection() {
         </div>
       </section>
 
-      {/* Chapter 4: Kessler syndrome — simulator + real debris data */}
+      {/* Chapter 5: Kessler syndrome — simulator + real debris data */}
       <section className="scrolly-solo">
         <Chapter
-          id="chapter-4"
-          number={4}
+          id="chapter-5"
+          number={5}
           title="Kessler Syndrome"
           body="One collision can trigger a cascade: each fragment becomes a projectile capable of generating more. Above a critical orbital density, this self-sustaining chain reaction could render entire shells permanently unusable. The simulation below illustrates the mechanics; the data below that shows the historical record."
-          isActive={active === 'chapter-4'}
+          isActive={active === 'chapter-5'}
         >
           <VizBox
             label="Kessler Cascade Simulator"
@@ -230,7 +263,7 @@ export default function ScrollySection() {
         </Chapter>
       </section>
 
-      {/* Chapters 5 & 6: CDM table (sticky) + approach viz + error tubes */}
+      {/* Chapters 6 & 7: CDM table (sticky) + approach viz + error tubes */}
       <section className="scrolly scrolly--half">
         <div className="scrolly-scene">
           <div className="scene-panel">
@@ -240,11 +273,11 @@ export default function ScrollySection() {
 
         <div className="scrolly-story">
           <Chapter
-            id="chapter-5"
-            number={5}
+            id="chapter-6"
+            number={6}
             title='Visualizing the "Invisible" Risk'
             body="Select a conjunction event from the table. The miss distance only becomes meaningful once you translate it into a human scale — the comparison below does exactly that."
-            isActive={active === 'chapter-5'}
+            isActive={active === 'chapter-6'}
           >
             <div className="cdm-sat-cards">
               <SatelliteCard label="Object 1" role="primary" sat={null} />
@@ -291,11 +324,11 @@ export default function ScrollySection() {
           </Chapter>
 
           <Chapter
-            id="chapter-6"
-            number={6}
+            id="chapter-7"
+            number={7}
             title="The Margin of Error"
             body="Satellites are not points — they are probability volumes. The covariance ellipses below show why a seemingly safe miss distance can still be classified as an emergency."
-            isActive={active === 'chapter-6'}
+            isActive={active === 'chapter-7'}
           >
             <VizBox
               label="Covariance Ellipse Visualization"

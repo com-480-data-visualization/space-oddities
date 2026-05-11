@@ -6,6 +6,7 @@ import GrowthChart from './GrowthChart'
 import OrbitClassChart from './OrbitClassChart'
 import OwnershipChart from './OwnershipChart'
 import TypeBreakdownChart from './TypeBreakdownChart'
+import TypeOwnershipWheel from './TypeOwnershipWheel'
 import CdmTable from './CdmTable'
 import SatelliteCard from './SatelliteCard'
 import VizBox from './VizBox'
@@ -31,6 +32,8 @@ const TYPE_FILTERS = [
   { value: 'other', label: 'Other' },
 ]
 
+const DEFAULT_TYPE_FILTER = { category: 'all', country: null, operator: null }
+
 function sceneChapter(id) {
   if (id === 'chapter-1') return 'growth'
   if (id === 'chapter-2') return 'altitudes'
@@ -52,7 +55,8 @@ export default function ScrollySection() {
   const [currentYear, setCurrentYear] = useState(2026)
   const [hoverBand, setHoverBand] = useState(null)
   const [ownershipHighlight, setOwnershipHighlight] = useState(null)
-  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [typeView, setTypeView] = useState('simple')
+  const [typeFilter, setTypeFilter] = useState(DEFAULT_TYPE_FILTER)
   const [selectedCdm, setSelectedCdm] = useState(null)
   const [hoveredEvent, setHoveredEvent] = useState(null)
   const [debrisSizeFilter, setDebrisSizeFilter] = useState('>10 cm')
@@ -84,9 +88,23 @@ export default function ScrollySection() {
 
   const handleSlider = useCallback(e => setCurrentYear(Number(e.target.value)), [])
 
+  const setTypeCategory = useCallback(category => {
+    setTypeFilter({ category, country: null, operator: null })
+  }, [])
+
+  function matchesTypeFilter(sat) {
+    if (typeFilter.category === 'all') return true
+    if (sat.category !== typeFilter.category) return false
+    if (typeFilter.countryValues && !typeFilter.countryValues.includes(sat.country)) return false
+    if (typeFilter.country && sat.country !== typeFilter.country) return false
+    if (typeFilter.operatorValues && !typeFilter.operatorValues.includes(sat.operator)) return false
+    if (typeFilter.operator && sat.operator !== typeFilter.operator) return false
+    return true
+  }
+
   const visibleCount = satellites.filter(sat => {
     if (sceneChapter(active) === 'growth') return Number.isFinite(sat.launchYear) && sat.launchYear <= currentYear
-    if (sceneChapter(active) === 'types') return categoryFilter === 'all' || sat.category === categoryFilter
+    if (sceneChapter(active) === 'types') return matchesTypeFilter(sat)
     return true
   }).length
 
@@ -117,7 +135,7 @@ export default function ScrollySection() {
                     currentYear={currentYear}
                     hoverBand={hoverBand}
                     ownershipHighlight={ownershipHighlight}
-                    categoryFilter={categoryFilter}
+                    typeFilter={typeFilter}
                   />
               }
             </div>
@@ -198,22 +216,49 @@ export default function ScrollySection() {
             body="Not everything in orbit is a working satellite. The map separates payloads, debris, rocket bodies, and other tracked objects."
             isActive={active === 'chapter-4'}
           >
-            <div className="filter-row">
-              {TYPE_FILTERS.map(filter => (
-                <button
-                  key={filter.value}
-                  className={`filter-btn${categoryFilter === filter.value ? ' filter-btn--active' : ''}`}
-                  onClick={() => setCategoryFilter(filter.value)}
-                >
-                  {filter.label}
-                </button>
-              ))}
+            <div className="view-toggle">
+              <button
+                className={`view-toggle-btn${typeView === 'simple' ? ' view-toggle-btn--active' : ''}`}
+                onClick={() => {
+                  setTypeView('simple')
+                  setTypeFilter(prev => ({ category: prev.category, country: null, operator: null }))
+                }}
+              >
+                Simple view
+              </button>
+              <button
+                className={`view-toggle-btn${typeView === 'wheel' ? ' view-toggle-btn--active' : ''}`}
+                onClick={() => setTypeView('wheel')}
+              >
+                Wheel view
+              </button>
             </div>
-            <TypeBreakdownChart
-              satellites={satellites}
-              selectedCategory={categoryFilter}
-              onSelectCategory={setCategoryFilter}
-            />
+            {typeView === 'simple' ? (
+              <>
+                <div className="filter-row">
+                  {TYPE_FILTERS.map(filter => (
+                    <button
+                      key={filter.value}
+                      className={`filter-btn${typeFilter.category === filter.value && !typeFilter.country && !typeFilter.operator ? ' filter-btn--active' : ''}`}
+                      onClick={() => setTypeCategory(filter.value)}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+                <TypeBreakdownChart
+                  satellites={satellites}
+                  selectedCategory={typeFilter.category}
+                  onSelectCategory={setTypeCategory}
+                />
+              </>
+            ) : (
+              <TypeOwnershipWheel
+                satellites={satellites}
+                filter={typeFilter}
+                onFilterChange={setTypeFilter}
+              />
+            )}
           </Chapter>
         </div>
       </section>

@@ -41,8 +41,14 @@ function isVisible(sat, chapter, currentYear) {
   return true
 }
 
-function matchesCategory(sat, categoryFilter) {
-  return categoryFilter === 'all' || sat.category === categoryFilter
+function matchesTypeFilter(sat, filter) {
+  if (!filter || filter.category === 'all') return true
+  if (sat.category !== filter.category) return false
+  if (filter.countryValues && !filter.countryValues.includes(sat.country)) return false
+  if (filter.country && sat.country !== filter.country) return false
+  if (filter.operatorValues && !filter.operatorValues.includes(sat.operator)) return false
+  if (filter.operator && sat.operator !== filter.operator) return false
+  return true
 }
 
 function matchesOwnership(sat, highlight) {
@@ -78,7 +84,7 @@ function visualRadius(sat) {
   return inner + t * (outer - inner) + tinyOffset(sat.id) * 10
 }
 
-export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand, ownershipHighlight, categoryFilter = 'all' }) {
+export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand, ownershipHighlight, typeFilter }) {
   const canvasRef = useRef(null)
   const hoveredRef = useRef(null)
   const quadtreeRef = useRef(null)
@@ -157,7 +163,7 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
     for (const sat of satellites) {
       if (!isVisible(sat, activeChapter, currentYear)) continue
       if (!sat.hasPosition) continue
-      if (activeChapter === 'types' && !matchesCategory(sat, categoryFilter)) continue
+      if (activeChapter === 'types' && !matchesTypeFilter(sat, typeFilter)) continue
 
       const angle = sat._angle ?? 0
       const r = visualRadius(sat)
@@ -207,7 +213,7 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
     }
 
     quadtreeRef.current = d3.quadtree(rendered, d => d.cx, d => d.cy)
-  }, [satellites, activeChapter, currentYear, hoverBand, ownershipHighlight, categoryFilter])
+  }, [satellites, activeChapter, currentYear, hoverBand, ownershipHighlight, typeFilter])
 
   // animation loop
   useEffect(() => {

@@ -1,0 +1,86 @@
+.wheel-panel {
+  margin-top: 0.75rem;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.wheel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.wheel-selection {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.wheel-reset {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #9dafcc;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  padding: 0.22rem 0.55rem;
+}
+
+.wheel-reset:hover {
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ownership-wheel {
+  width: 100%;
+  max-height: 310px;
+  display: block;
+}
+
+.wheel-segment {
+  cursor: pointer;
+  stroke: rgba(7, 12, 23, 0.75);
+  stroke-width: 0.7;
+  transition: opacity 120ms ease, stroke 120ms ease;
+}
+
+.wheel-segment:hover,
+.wheel-segment--active {
+  opacity: 1;
+  stroke: #f8fafc;
+  stroke-width: 1.2;
+}
+
+.wheel-center {
+  fill: rgba(7, 12, 23, 0.96);
+  stroke: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+}
+
+.wheel-center-label {
+  fill: #e2e8f0;
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.wheel-center-sub {
+  fill: #64748b;
+  font-size: 6px;
+  pointer-events: none;
+}
+
+.wheel-note {
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  color: #64748b;
+  text-align: center;
+}

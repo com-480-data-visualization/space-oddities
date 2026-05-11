@@ -41,6 +41,10 @@ function isVisible(sat, chapter, currentYear) {
   return true
 }
 
+function matchesCategory(sat, categoryFilter) {
+  return categoryFilter === 'all' || sat.category === categoryFilter
+}
+
 function matchesOwnership(sat, highlight) {
   if (!highlight) return false
   return highlight.kind === 'country'
@@ -74,7 +78,7 @@ function visualRadius(sat) {
   return inner + t * (outer - inner) + tinyOffset(sat.id) * 10
 }
 
-export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand, ownershipHighlight }) {
+export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand, ownershipHighlight, categoryFilter = 'all' }) {
   const canvasRef = useRef(null)
   const hoveredRef = useRef(null)
   const quadtreeRef = useRef(null)
@@ -153,6 +157,7 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
     for (const sat of satellites) {
       if (!isVisible(sat, activeChapter, currentYear)) continue
       if (!sat.hasPosition) continue
+      if (activeChapter === 'types' && !matchesCategory(sat, categoryFilter)) continue
 
       const angle = sat._angle ?? 0
       const r = visualRadius(sat)
@@ -202,7 +207,7 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
     }
 
     quadtreeRef.current = d3.quadtree(rendered, d => d.cx, d => d.cy)
-  }, [satellites, activeChapter, currentYear, hoverBand, ownershipHighlight])
+  }, [satellites, activeChapter, currentYear, hoverBand, ownershipHighlight, categoryFilter])
 
   // animation loop
   useEffect(() => {

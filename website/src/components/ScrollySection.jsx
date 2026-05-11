@@ -5,6 +5,7 @@ import OrbitScene from './OrbitScene'
 import GrowthChart from './GrowthChart'
 import OrbitClassChart from './OrbitClassChart'
 import OwnershipChart from './OwnershipChart'
+import TypeBreakdownChart from './TypeBreakdownChart'
 import CdmTable from './CdmTable'
 import SatelliteCard from './SatelliteCard'
 import VizBox from './VizBox'
@@ -22,6 +23,13 @@ const KESSLER_EVENTS = [
 ]
 
 const DEBRIS_SIZE_FILTERS = ['>1 mm', '>1 cm', '>10 cm', '>1 m']
+const TYPE_FILTERS = [
+  { value: 'all', label: 'All objects' },
+  { value: 'payload', label: 'Payloads' },
+  { value: 'debris', label: 'Debris' },
+  { value: 'rocket body', label: 'Rocket bodies' },
+  { value: 'other', label: 'Other' },
+]
 
 function sceneChapter(id) {
   if (id === 'chapter-1') return 'growth'
@@ -44,6 +52,7 @@ export default function ScrollySection() {
   const [currentYear, setCurrentYear] = useState(2026)
   const [hoverBand, setHoverBand] = useState(null)
   const [ownershipHighlight, setOwnershipHighlight] = useState(null)
+  const [categoryFilter, setCategoryFilter] = useState('all')
   const [selectedCdm, setSelectedCdm] = useState(null)
   const [hoveredEvent, setHoveredEvent] = useState(null)
   const [debrisSizeFilter, setDebrisSizeFilter] = useState('>10 cm')
@@ -77,6 +86,7 @@ export default function ScrollySection() {
 
   const visibleCount = satellites.filter(sat => {
     if (sceneChapter(active) === 'growth') return Number.isFinite(sat.launchYear) && sat.launchYear <= currentYear
+    if (sceneChapter(active) === 'types') return categoryFilter === 'all' || sat.category === categoryFilter
     return true
   }).length
 
@@ -107,6 +117,7 @@ export default function ScrollySection() {
                     currentYear={currentYear}
                     hoverBand={hoverBand}
                     ownershipHighlight={ownershipHighlight}
+                    categoryFilter={categoryFilter}
                   />
               }
             </div>
@@ -184,18 +195,24 @@ export default function ScrollySection() {
             id="chapter-4"
             number={4}
             title="Payloads vs. Debris"
-            body="Of the tracked objects, only a fraction are active satellites. The rest are debris, spent rocket bodies, and fragments — a growing cloud of abandoned hardware surrounding Earth."
+            body="Not everything in orbit is a working satellite. The map separates payloads, debris, rocket bodies, and other tracked objects."
             isActive={active === 'chapter-4'}
           >
             <div className="filter-row">
-              {['All objects', 'Payloads only', 'Debris only', 'Rocket bodies'].map(label => (
-                <button key={label} className="filter-btn" disabled>{label}</button>
+              {TYPE_FILTERS.map(filter => (
+                <button
+                  key={filter.value}
+                  className={`filter-btn${categoryFilter === filter.value ? ' filter-btn--active' : ''}`}
+                  onClick={() => setCategoryFilter(filter.value)}
+                >
+                  {filter.label}
+                </button>
               ))}
             </div>
-            <VizBox
-              label="Pie / Donut Chart — Object type breakdown"
-              note="D3.js · Active payloads / Debris / Rocket bodies / Other"
-              height="160px"
+            <TypeBreakdownChart
+              satellites={satellites}
+              selectedCategory={categoryFilter}
+              onSelectCategory={setCategoryFilter}
             />
           </Chapter>
         </div>

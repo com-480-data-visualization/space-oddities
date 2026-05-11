@@ -4,13 +4,18 @@ import { propagateAll } from '../hooks/useSatelliteData'
 import './OrbitScene.css'
 
 const EARTH_RADIUS_KM = 6371
-const MAX_PLOT_RADIUS_KM = 50000
 const LOGICAL_SIZE = 1000
 
-const BAND_REFERENCE_KM = {
-  LEO: EARTH_RADIUS_KM + 1200,
-  MEO: EARTH_RADIUS_KM + 20200,
-  GEO: 42164,
+const BAND_RING_RADIUS = {
+  LEO: 230,
+  MEO: 355,
+  GEO: 445,
+}
+
+const BAND_RADIUS_RANGE = {
+  LEO: [145, 285],
+  MEO: [315, 395],
+  GEO: [425, 468],
 }
 
 const ORBIT_BAND_COLORS = {
@@ -25,10 +30,6 @@ const CATEGORY_COLORS = {
   'rocket body': '#fbbf24',
   other: '#9ca3af',
 }
-
-const radialScale = d3.scaleSqrt()
-  .domain([0, MAX_PLOT_RADIUS_KM])
-  .range([104, 470])
 
 const EARTH_R = 88
 const center = { x: LOGICAL_SIZE / 2, y: LOGICAL_SIZE / 2 }
@@ -45,6 +46,32 @@ function matchesOwnership(sat, highlight) {
   return highlight.kind === 'country'
     ? sat.country === highlight.value
     : sat.operator === highlight.value
+}
+
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value))
+}
+
+function tinyOffset(id) {
+  const n = Number(id)
+  if (!Number.isFinite(n)) return 0
+  return ((n * 9301 + 49297) % 233280) / 233280 - 0.5
+}
+
+function visualRadius(sat) {
+  const altKm = Math.max(0, (sat.geoKm || EARTH_RADIUS_KM) - EARTH_RADIUS_KM)
+  let t
+  if (sat.orbitBand === 'LEO') {
+    t = clamp01(altKm / 2000)
+  } else if (sat.orbitBand === 'MEO') {
+    t = clamp01((altKm - 2000) / (35786 - 2000))
+  } else {
+    t = clamp01((altKm - 35786) / 15000)
+  }
+
+  const [inner, outer] = BAND_RADIUS_RANGE[sat.orbitBand] || BAND_RADIUS_RANGE.LEO
+  // Same schematic radius in every chapter: correct band first, light spreading for readability.
+  return inner + t * (outer - inner) + tinyOffset(sat.id) * 10
 }
 
 export default function OrbitScene({ satellites, activeChapter, currentYear, hoverBand, ownershipHighlight }) {
@@ -76,8 +103,7 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
     ctx.setLineDash([4, 8])
     ctx.strokeStyle = 'rgba(144, 165, 196, 0.22)'
     ctx.lineWidth = 1.2
-    Object.entries(BAND_REFERENCE_KM).forEach(([key, km]) => {
-      const r = radialScale(Math.min(km, MAX_PLOT_RADIUS_KM))
+    Object.entries(BAND_RING_RADIUS).forEach(([key, r]) => {
       ctx.beginPath()
       ctx.arc(center.x, center.y, r, 0, Math.PI * 2)
       ctx.stroke()
@@ -126,9 +152,10 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
 
     for (const sat of satellites) {
       if (!isVisible(sat, activeChapter, currentYear)) continue
+      if (!sat.hasPosition) continue
 
       const angle = sat._angle ?? 0
-      const r = radialScale(Math.min(sat.xyKm || 0, MAX_PLOT_RADIUS_KM))
+      const r = visualRadius(sat)
       sat.cx = center.x + Math.cos(angle) * r
       sat.cy = center.y + Math.sin(angle) * r
 

@@ -114,6 +114,7 @@ export function useSatelliteData() {
             category: normalizeCategory(row),
             launchYear: parseLaunchYear(row),
             satrec,
+            hasPosition: false,
             orbitBand: 'LEO',
             xyKm: 0,
             geoKm: 0,
@@ -142,12 +143,15 @@ export function useSatelliteData() {
 
 export function propagateAll(sats, when) {
   for (const sat of sats) {
+    sat.hasPosition = false
     const prop = satellite.propagate(sat.satrec, when)
     if (!prop || !prop.position) continue
     const { x, y, z } = prop.position
+    if (![x, y, z].every(Number.isFinite)) continue
     sat.xyKm = Math.sqrt(x * x + y * y)
     sat.geoKm = Math.sqrt(x * x + y * y + z * z)
     sat.orbitBand = inferOrbitBand(sat.geoKm - EARTH_RADIUS_KM)
     sat._angle = Math.atan2(y, x)
+    sat.hasPosition = true
   }
 }

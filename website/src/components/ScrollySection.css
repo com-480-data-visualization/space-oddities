@@ -108,6 +108,18 @@
   accent-color: #38bdf8;
 }
 
+.term-help {
+  color: #8ed7ff;
+  cursor: help;
+  border-bottom: 1px dotted rgba(142, 215, 255, 0.65);
+  outline: none;
+}
+
+.term-help:focus-visible {
+  border-bottom-style: solid;
+  box-shadow: 0 2px 0 rgba(142, 215, 255, 0.35);
+}
+
 .filter-row {
   display: flex;
   flex-wrap: wrap;

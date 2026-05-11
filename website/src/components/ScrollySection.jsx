@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Tooltip } from '@mantine/core'
 import Chapter from './Chapter'
 import OrbitScene from './OrbitScene'
 import GrowthChart from './GrowthChart'
@@ -98,7 +99,21 @@ export default function ScrollySection() {
             id="chapter-1"
             number={1}
             title="The Exponential Growth"
-            body="The same orbit map tells a temporal story: as time advances, more objects appear around Earth. Drag the slider to move through launch history."
+            body={
+              <>
+                The orbit map estimates each object's current position from the latest{' '}
+                <Tooltip
+                  label="TLE stands for Two-Line Element: a compact text record that describes an object's orbit, used here to estimate where it is around Earth."
+                  multiline
+                  width={260}
+                  withArrow
+                  position="top"
+                >
+                  <span className="term-help" tabIndex={0}>TLE</span>
+                </Tooltip>{' '}
+                available in our data, then filters out objects that are no longer in orbit. Their positions are recomputed every few seconds, giving an approximate real-time view of how objects move around Earth. Drag the slider to reveal how today's orbital population built up over launch history.
+              </>
+            }
             isActive={active === 'chapter-1'}
           >
             <div className="chapter-control">

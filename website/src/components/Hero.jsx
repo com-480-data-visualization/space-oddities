@@ -5,7 +5,7 @@ export default function Hero() {
   return (
     <section className="hero" id="intro">
       <div className="hero-inner">
-        <Badge variant="outline" color="cyan" mb="sm">EPFL COM-480 · Data Visualization 2025</Badge>
+        <Badge variant="outline" color="cyan" mb="sm">EPFL COM-480 · Data Visualization 2026</Badge>
         <h1 className="hero-title">Space Oddities</h1>
         <p className="hero-sub">
           Two objects that cannot steer are headed for each other at 14 km/s.<br />

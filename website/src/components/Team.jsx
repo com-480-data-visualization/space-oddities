@@ -23,7 +23,7 @@ export default function Team() {
           </div>
         ))}
       </div>
-      <p className="team-course">EPFL COM-480 Data Visualization · Spring 2025</p>
+      <p className="team-course">EPFL COM-480 Data Visualization · Spring 2026</p>
     </section>
   )
 }

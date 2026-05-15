@@ -16,7 +16,8 @@
 .scrolly-scene {
   position: sticky;
   top: 60px;
-  height: calc(100vh - 72px);
+  height: 420px;
+  width: 420px;
   display: flex;
   flex-direction: column;
 }

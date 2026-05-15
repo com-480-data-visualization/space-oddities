@@ -1,6 +1,6 @@
 .scrolly {
   display: grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: 1fr 840px;
   gap: 1.25rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -16,8 +16,8 @@
 .scrolly-scene {
   position: sticky;
   top: 60px;
-  height: 420px;
-  width: 420px;
+  height: 840px;
+  width: 840px;
   display: flex;
   flex-direction: column;
 }

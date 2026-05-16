@@ -1,6 +1,6 @@
 .scrolly {
   display: grid;
-  grid-template-columns: 1fr 840px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 1.25rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -16,8 +16,8 @@
 .scrolly-scene {
   position: sticky;
   top: 60px;
-  height: 840px;
-  width: 840px;
+  width: 100%;
+  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
 }
@@ -81,6 +81,7 @@
 .scrolly-story {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .chapter-control {
@@ -314,16 +315,6 @@
 }
 
 @media (max-width: 1000px) {
-  .scrolly {
-    grid-template-columns: 1fr;
-  }
-
-  .scrolly-scene {
-    position: relative;
-    top: 0;
-    height: 60vh;
-  }
-
   .cdm-sat-cards {
     flex-direction: column;
   }

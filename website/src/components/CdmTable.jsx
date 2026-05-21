@@ -98,7 +98,7 @@ export default function CdmTable({ selectedCdm, onSelect }) {
     sortDir === 'asc' ? SORTERS[sortKey](a, b) : SORTERS[sortKey](b, a)
   )
 
-  function Arrow({ col }) {
+  const renderArrow = (col) => {
     if (sortKey !== col) return <span className="sort-neutral">⇅</span>
     return <span className="sort-active">{sortDir === 'asc' ? '↑' : '↓'}</span>
   }
@@ -139,13 +139,13 @@ export default function CdmTable({ selectedCdm, onSelect }) {
             <tr>
               <th className="col-sats">Satellites</th>
               <th className="col-tca sortable" onClick={() => handleHeader('tca_utc')}>
-                TCA <Arrow col="tca_utc" />
+                TCA {renderArrow('tca_utc')}
               </th>
               <th className="col-range sortable" onClick={() => handleHeader('min_rng_m')}>
-                Range <Arrow col="min_rng_m" />
+                Range {renderArrow('min_rng_m')}
               </th>
               <th className="col-pc sortable" onClick={() => handleHeader('pc')}>
-                Pc <Arrow col="pc" />
+                Pc {renderArrow('pc')}
               </th>
             </tr>
           </thead>

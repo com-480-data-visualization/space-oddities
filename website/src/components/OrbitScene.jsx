@@ -167,8 +167,8 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
 
       const angle = sat._angle ?? 0
       const r = visualRadius(sat)
-      sat.cx = center.x + Math.cos(angle) * r
-      sat.cy = center.y + Math.sin(angle) * r
+      const cx = center.x + Math.cos(angle) * r
+      const cy = center.y + Math.sin(angle) * r
 
       let color
       if (activeChapter === 'altitudes') {
@@ -197,9 +197,9 @@ export default function OrbitScene({ satellites, activeChapter, currentYear, hov
       ctx.beginPath()
       ctx.fillStyle = color
       ctx.globalAlpha = alpha
-      ctx.arc(sat.cx, sat.cy, 1.9, 0, Math.PI * 2)
+      ctx.arc(cx, cy, 1.9, 0, Math.PI * 2)
       ctx.fill()
-      rendered.push(sat)
+      rendered.push({ ...sat, cx, cy })
     }
 
     ctx.globalAlpha = 1

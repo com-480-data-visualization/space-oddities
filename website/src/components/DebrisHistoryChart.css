@@ -1,0 +1,59 @@
+.debris-chart-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px;
+}
+
+.debris-chart {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.debris-chart-axis path,
+.debris-chart-axis line {
+  stroke: rgba(157, 175, 204, 0.15);
+}
+
+.debris-chart-axis text {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 10px;
+  fill: #9dafcc;
+}
+
+.debris-chart-line {
+  fill: none;
+  stroke: var(--debris-color, #fb7185);
+  stroke-width: 2;
+}
+
+.debris-chart-area {
+  fill: rgba(251, 113, 133, 0.15);
+}
+
+.debris-chart-event-line {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.debris-chart-event-line.highlight {
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.debris-chart-event-label {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 10px;
+  fill: rgba(255, 255, 255, 0.6);
+  text-anchor: end;
+}
+
+.debris-chart-event-label.highlight {
+  fill: #fff;
+  font-weight: 700;
+}

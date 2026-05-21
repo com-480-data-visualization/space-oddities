@@ -9,6 +9,8 @@ import TypeBreakdownChart from './TypeBreakdownChart'
 import TypeOwnershipWheel from './TypeOwnershipWheel'
 import CdmTable from './CdmTable'
 import SatelliteCard from './SatelliteCard'
+import KesslerSimulator from './KesslerSimulator'
+import DebrisHistoryChart from './DebrisHistoryChart'
 import VizBox from './VizBox'
 import { useSatelliteData } from '../hooks/useSatelliteData'
 import './ScrollySection.css'
@@ -272,11 +274,7 @@ export default function ScrollySection() {
           body="One collision can trigger a cascade: each fragment becomes a projectile capable of generating more. Above a critical orbital density, this self-sustaining chain reaction could render entire shells permanently unusable. The simulation below illustrates the mechanics; the data below that shows the historical record."
           isActive={active === 'chapter-5'}
         >
-          <VizBox
-            label="Kessler Cascade Simulator"
-            note="Canvas animation · a ring of objects orbits Earth · triggering a collision causes fragments to branch outward · each fragment carries its own velocity vector and can strike other objects · the cascade expands until the ring is saturated"
-            height="340px"
-          />
+          <KesslerSimulator height="340px" />
 
           <div className="kessler-data">
             <div className="kessler-events-col">
@@ -311,13 +309,9 @@ export default function ScrollySection() {
                   </button>
                 ))}
               </div>
-              <VizBox
-                label="Cumulative Debris Count Over Time"
-                note={
-                  hoveredEvent
-                    ? `D3 line chart · tracked objects ${debrisSizeFilter} · x-axis zoomed to ±2 years around ${hoveredEvent.year} · spike from ${hoveredEvent.name} highlighted in red with fragment count annotation`
-                    : `D3 line chart · total tracked objects ${debrisSizeFilter} · 1957–present · hover an event on the left to zoom and highlight its debris contribution`
-                }
+              <DebrisHistoryChart 
+                satellites={satellites}
+                hoveredEvent={hoveredEvent}
                 height="280px"
               />
             </div>

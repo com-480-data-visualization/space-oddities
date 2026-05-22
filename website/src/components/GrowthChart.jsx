@@ -1,90 +1,119 @@
-import { useEffect, useRef } from 'react'
+import { useMemo } from 'react'
+import { LinePath, AreaClosed } from '@visx/shape'
+import { AxisBottom } from '@visx/axis'
+import { Group } from '@visx/group'
+import { scaleLinear } from '@visx/scale'
 import * as d3 from 'd3'
 import './GrowthChart.css'
 
+const W      = 360
+const H      = 160
+const margin = { top: 8, right: 8, bottom: 22, left: 28 }
+
+function buildCumulative(satellites, minYear, maxYear) {
+  const byYear = d3.rollup(
+    satellites.filter(s => Number.isFinite(s.launchYear)),
+    v => v.length,
+    s => s.launchYear,
+  )
+  let running = 0
+  return Array.from({ length: maxYear - minYear + 1 }, (_, i) => {
+    const year = minYear + i
+    running += byYear.get(year) ?? 0
+    return { year, cumulative: running }
+  })
+}
+
 export default function GrowthChart({ satellites, currentYear, yearRange, isActive }) {
-  const svgRef = useRef(null)
+  const [minYear, maxYear] = yearRange
 
-  useEffect(() => {
-    if (!satellites.length || !svgRef.current) return
+  const data = useMemo(
+    () => (satellites.length ? buildCumulative(satellites, minYear, maxYear) : []),
+    [satellites, minYear, maxYear],
+  )
 
-    const [minYear, maxYear] = yearRange
-    const validYears = satellites.map(d => d.launchYear).filter(Number.isFinite).sort((a, b) => a - b)
-    const byYear = d3.rollups(validYears, v => v.length, d => d).sort((a, b) => a[0] - b[0])
+  const innerWidth  = W - margin.left - margin.right
+  const innerHeight = H - margin.top  - margin.bottom
 
-    let running = 0
-    const yearly = byYear.map(([year, count]) => ({ year, count }))
-    const cumulative = yearly.map(d => { running += d.count; return { year: d.year, count: running } })
+  const xScale = useMemo(
+    () => scaleLinear({ domain: [minYear, maxYear], range: [0, innerWidth] }),
+    [minYear, maxYear, innerWidth],
+  )
+  const yScale = useMemo(() => {
+    const maxVal = d3.max(data, d => d.cumulative) ?? 1
+    return scaleLinear({ domain: [0, maxVal], range: [innerHeight, 0], nice: true })
+  }, [data, innerHeight])
 
-    const width = 360
-    const height = 160
-    const m = { top: 8, right: 8, bottom: 22, left: 28 }
-
-    const x = d3.scaleLinear().domain([minYear, maxYear]).range([m.left, width - m.right])
-    const yL = d3.scaleLinear().domain([0, d3.max(yearly, d => d.count) || 1]).nice().range([height - m.bottom, m.top])
-    const yC = d3.scaleLinear().domain([0, d3.max(cumulative, d => d.count) || 1]).nice().range([height - m.bottom, m.top])
-
-    const line = d3.line().x(d => x(d.year)).y(d => yL(d.count)).curve(d3.curveMonotoneX)
-    const area = d3.area().x(d => x(d.year)).y0(height - m.bottom).y1(d => yC(d.count)).curve(d3.curveMonotoneX)
-
-    const svg = d3.select(svgRef.current)
-    svg.selectAll('*').remove()
-
-    svg.append('path')
-      .datum(cumulative)
-      .attr('d', area)
-      .attr('fill', 'rgba(142, 215, 255, 0.15)')
-
-    svg.append('path')
-      .datum(yearly)
-      .attr('d', line)
-      .attr('fill', 'none')
-      .attr('stroke', '#8ed7ff')
-      .attr('stroke-width', 1.7)
-
-    const focusX = x(Math.max(minYear, Math.min(maxYear, currentYear)))
-    svg.append('line')
-      .attr('x1', focusX).attr('x2', focusX)
-      .attr('y1', m.top).attr('y2', height - m.bottom)
-      .attr('stroke', '#f8fafc')
-      .attr('stroke-opacity', isActive ? 0.85 : 0.2)
-      .attr('stroke-dasharray', '4 5')
-
-    // year axis ticks
-    const ticks = [minYear, Math.round((minYear + maxYear) / 2), maxYear]
-    svg.selectAll('text.xt')
-      .data(ticks)
-      .join('text')
-      .attr('class', 'xt')
-      .attr('x', d => x(d))
-      .attr('y', height - 5)
-      .attr('text-anchor', 'middle')
-      .attr('font-size', 10)
-      .attr('fill', '#9dafcc')
-      .text(d => d)
-
-    // count label at focus
-    const focusData = cumulative.find(d => d.year === Math.max(minYear, Math.min(maxYear, currentYear)))
-      || cumulative[cumulative.length - 1]
-    if (focusData && isActive) {
-      svg.append('text')
-        .attr('x', focusX + 5)
-        .attr('y', m.top + 10)
-        .attr('font-size', 10)
-        .attr('fill', '#8ed7ff')
-        .text(focusData.count.toLocaleString())
-    }
-  }, [satellites, currentYear, yearRange, isActive])
+  const focusYear  = Math.max(minYear, Math.min(maxYear, currentYear))
+  const focusX     = xScale(focusYear)
+  const focusPoint = data.find(d => d.year === focusYear) ?? data[data.length - 1]
 
   return (
     <div className="growth-chart-wrap">
-      <p className="growth-chart-title">Yearly launches + cumulative</p>
+      <p className="growth-chart-title">Cumulative objects in orbit</p>
       <svg
-        ref={svgRef}
+        width={W}
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
         className="growth-chart-svg"
-        viewBox="0 0 360 160"
-        preserveAspectRatio="none"
-      />
+      >
+        <Group top={margin.top} left={margin.left}>
+          {data.length > 0 && (
+            <>
+              <AreaClosed
+                data={data}
+                x={d => xScale(d.year)}
+                y={d => yScale(d.cumulative)}
+                yScale={yScale}
+                curve={d3.curveMonotoneX}
+                fill="rgba(142,215,255,0.13)"
+              />
+              <LinePath
+                data={data}
+                x={d => xScale(d.year)}
+                y={d => yScale(d.cumulative)}
+                curve={d3.curveMonotoneX}
+                stroke="#8ed7ff"
+                strokeWidth={1.8}
+              />
+            </>
+          )}
+
+          {/* Scrubber line */}
+          <line
+            x1={focusX} x2={focusX} y1={0} y2={innerHeight}
+            stroke="#f8fafc"
+            strokeOpacity={isActive ? 0.85 : 0.2}
+            strokeDasharray="4 5"
+          />
+
+          {/* Count callout */}
+          {focusPoint && isActive && (
+            <text
+              x={focusX + 4} y={10}
+              fontSize={10} fill="#8ed7ff"
+              fontFamily='"Space Grotesk", sans-serif'
+            >
+              {focusPoint.cumulative.toLocaleString()}
+            </text>
+          )}
+
+          <AxisBottom
+            top={innerHeight}
+            scale={xScale}
+            tickValues={[minYear, Math.round((minYear + maxYear) / 2), maxYear]}
+            tickFormat={d => String(d)}
+            stroke="transparent"
+            tickStroke="transparent"
+            tickLabelProps={() => ({
+              fill: '#9dafcc',
+              fontSize: 10,
+              fontFamily: '"Space Grotesk", sans-serif',
+              textAnchor: 'middle',
+            })}
+          />
+        </Group>
+      </svg>
     </div>
   )
 }

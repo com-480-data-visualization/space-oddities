@@ -12,10 +12,20 @@
   "dependencies": {
     "@mantine/core": "^9.0.2",
     "@mantine/hooks": "^9.0.2",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@visx/axis": "^3.12.0",
+    "@visx/event": "^3.12.0",
+    "@visx/grid": "^3.12.0",
+    "@visx/group": "^3.12.0",
+    "@visx/responsive": "^3.12.0",
+    "@visx/scale": "^3.12.0",
+    "@visx/shape": "^3.12.0",
     "d3": "^7.9.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "satellite.js": "^4.1.4"
+    "satellite.js": "^4.1.4",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

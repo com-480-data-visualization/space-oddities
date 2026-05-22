@@ -1,0 +1,160 @@
+.debris-growth-wrap {
+  margin-top: 0.5rem;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.debris-growth-title {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.debris-growth-sub {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.6;
+}
+
+.debris-growth-svg {
+  width: 100%;
+  height: 280px;
+  display: block;
+  overflow: visible;
+}
+
+/* Event chips */
+.dg-event-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dg-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #64748b;
+  font-size: 10px;
+  font-family: "Space Grotesk", sans-serif;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.dg-chip:hover {
+  border-color: var(--chip-color);
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dg-chip--active {
+  border-color: var(--chip-color);
+  background: color-mix(in srgb, var(--chip-color) 12%, transparent);
+  color: #e2e8f0;
+}
+
+.dg-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  flex-shrink: 0;
+}
+
+/* Event detail panel (shown below chart on click) */
+.dg-event-panel {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--panel-color) 30%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-color) 5%, transparent);
+  animation: dg-panel-in 140ms ease;
+}
+
+@keyframes dg-panel-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dg-event-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.dg-event-panel-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  font-family: "Space Grotesk", sans-serif;
+  margin-right: 8px;
+}
+
+.dg-event-panel-year {
+  font-size: 11px;
+  font-family: "Space Mono", monospace;
+  font-weight: 600;
+  color: var(--panel-color);
+}
+
+.dg-event-panel-close {
+  background: none;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dg-event-panel-close:hover {
+  color: #94a3b8;
+}
+
+.dg-event-panel-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: "Space Grotesk", sans-serif;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.dg-event-panel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dg-event-panel-frags {
+  font-size: 10px;
+  font-family: "Space Mono", monospace;
+  font-weight: 600;
+  color: var(--panel-color);
+}
+
+.dg-event-panel-link {
+  font-size: 11px;
+  color: #60a5fa;
+  font-family: "Space Grotesk", sans-serif;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dg-event-panel-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}

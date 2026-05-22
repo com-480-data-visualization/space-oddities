@@ -194,94 +194,53 @@
   padding: 0 1.5rem 4rem;
 }
 
-/* Kessler real-data section — events list + graph side by side */
-.kessler-data {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 1rem;
-  margin-top: 1.25rem;
-  align-items: start;
+
+/* Inline explainer blocks between visualizations */
+.explainer {
+  margin-top: 1rem;
+  padding: 10px 14px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0 6px 6px 0;
 }
 
-.kessler-events-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.explainer p {
+  font-size: 0.83rem;
+  color: #94a3b8;
+  line-height: 1.65;
+  margin: 0;
 }
 
-.kessler-col-label {
-  font-size: 0.72rem;
+.explainer p + p {
+  margin-top: 0.5rem;
+}
+
+.explainer p strong {
+  color: #cbd5e1;
   font-weight: 600;
+}
+
+.explainer p em {
+  color: #cbd5e1;
+  font-style: italic;
+}
+
+.explainer-heading {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #64748b;
-  padding: 0 2px;
+  letter-spacing: 0.07em;
+  color: #64748b !important;
+  margin-bottom: 6px !important;
 }
 
-.kessler-graph-col {
-  display: flex;
-  flex-direction: column;
+.explainer--warning {
+  border-left-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.04);
 }
 
-/* Kessler collision event list */
-.kessler-event-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-top: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.kessler-event {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 10px 12px;
-  cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 120ms ease;
-}
-
-.kessler-event:last-child {
-  border-bottom: none;
-}
-
-.kessler-event:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.kessler-event--hovered {
-  background: rgba(251, 113, 133, 0.08);
-}
-
-.kessler-event-year {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #fb7185;
-  width: 36px;
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-.kessler-event-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.kessler-event-name {
-  font-size: 0.82rem;
-  color: #e2e8f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.kessler-event-debris {
-  font-size: 0.73rem;
-  color: #64748b;
-  margin-top: 1px;
+.explainer--warning p strong {
+  color: #fbbf24;
 }
 
 /* CDM satellite cards */
@@ -311,6 +270,14 @@
 
 .cdm-time-center {
   color: #9dafcc;
+  font-variant-numeric: tabular-nums;
+}
+
+.cdm-offset-label {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 4px;
   font-variant-numeric: tabular-nums;
 }
 

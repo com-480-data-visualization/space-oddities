@@ -148,6 +148,9 @@ export function propagateAll(sats, when) {
     if (!prop || !prop.position) continue
     const { x, y, z } = prop.position
     if (![x, y, z].every(Number.isFinite)) continue
+    sat.pos_x = x
+    sat.pos_y = y
+    sat.pos_z = z
     sat.xyKm = Math.sqrt(x * x + y * y)
     sat.geoKm = Math.sqrt(x * x + y * y + z * z)
     sat.orbitBand = inferOrbitBand(sat.geoKm - EARTH_RADIUS_KM)

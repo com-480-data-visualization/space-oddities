@@ -1,0 +1,106 @@
+.explainer {
+  margin-top: 0.75rem;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.explainer--warning {
+  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.03);
+}
+
+.explainer--method {
+  border-color: rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.03);
+}
+
+.explainer-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: #94a3b8;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.explainer-toggle:hover {
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.explainer--warning .explainer-toggle { color: #d4a017; }
+.explainer--method  .explainer-toggle { color: #818cf8; }
+.explainer--warning .explainer-toggle:hover { color: #fbbf24; }
+.explainer--method  .explainer-toggle:hover  { color: #a5b4fc; }
+
+.explainer-icon {
+  font-style: normal;
+  font-size: 12px;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.explainer-label {
+  flex: 1;
+  font-size: 0.8rem;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600;
+}
+
+.explainer-chevron {
+  flex-shrink: 0;
+  transition: transform 220ms ease;
+  color: currentColor;
+}
+
+.explainer--open .explainer-chevron {
+  transform: rotate(180deg);
+}
+
+/* CSS grid collapse — smooth height animation with no JS */
+.explainer-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms ease;
+}
+
+.explainer--open .explainer-body {
+  grid-template-rows: 1fr;
+}
+
+.explainer-body-inner {
+  overflow: hidden;
+  padding: 0 12px;
+  transition: padding 220ms ease;
+}
+
+.explainer--open .explainer-body-inner {
+  padding: 0 12px 12px;
+}
+
+.explainer-body-inner p {
+  font-size: 0.83rem;
+  color: #94a3b8;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.explainer-body-inner p + p {
+  margin-top: 0.5rem;
+}
+
+.explainer-body-inner strong {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.explainer--warning .explainer-body-inner strong { color: #fbbf24; }
+.explainer--method  .explainer-body-inner strong { color: #a5b4fc; }

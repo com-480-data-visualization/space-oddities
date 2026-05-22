@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Tooltip } from '@mantine/core'
 import Chapter from './Chapter'
 import OrbitScene from './OrbitScene'
@@ -10,22 +10,19 @@ import TypeOwnershipWheel from './TypeOwnershipWheel'
 import CdmTable from './CdmTable'
 import SatelliteCard from './SatelliteCard'
 import KesslerSimulator from './KesslerSimulator'
-import DebrisHistoryChart from './DebrisHistoryChart'
-import VizBox from './VizBox'
+import DebrisGrowthChart from './DebrisGrowthChart'
+import ApproachChart from './ApproachChart'
+import CarAnimationMiss from './CarAnimationMiss'
+import CovarianceViz from './CovarianceViz'
+import Explainer from './Explainer'
 import { useSatelliteData } from '../hooks/useSatelliteData'
+import { useCdmData } from '../hooks/useCdmData'
+import { useApproachData } from '../hooks/useApproachData'
 import './ScrollySection.css'
 
 const CHAPTER_IDS = ['chapter-1', 'chapter-2', 'chapter-3', 'chapter-4', 'chapter-5', 'chapter-6', 'chapter-7']
 
-const KESSLER_EVENTS = [
-  { id: 'cerise',   year: 1996, name: 'Cerise × Ariane debris',          debrisAdded: 'minor fragmentation' },
-  { id: 'fengyun',  year: 2007, name: 'China ASAT — Fengyun-1C',         debrisAdded: '~3,500 trackable fragments' },
-  { id: 'iridium',  year: 2009, name: 'Iridium 33 × Cosmos 2251',        debrisAdded: '~2,000 trackable fragments' },
-  { id: 'cosmos',   year: 2021, name: 'Russia ASAT — Cosmos 1408',       debrisAdded: '~1,500 trackable fragments' },
-  { id: 'starlink', year: 2023, name: 'Starlink-1095 × debris near-miss', debrisAdded: 'no collision — evasive manoeuvre' },
-]
 
-const DEBRIS_SIZE_FILTERS = ['>1 mm', '>1 cm', '>10 cm', '>1 m']
 const TYPE_FILTERS = [
   { value: 'all', label: 'All objects' },
   { value: 'payload', label: 'Payloads' },
@@ -60,12 +57,26 @@ export default function ScrollySection() {
   const [typeView, setTypeView] = useState('simple')
   const [typeFilter, setTypeFilter] = useState(DEFAULT_TYPE_FILTER)
   const [selectedCdm, setSelectedCdm] = useState(null)
-  const [hoveredEvent, setHoveredEvent] = useState(null)
-  const [debrisSizeFilter, setDebrisSizeFilter] = useState('>10 cm')
+  const [tcaOffsetMin, setTcaOffsetMin] = useState(0)
+
   const { satellites, loading, yearRange } = useSatelliteData()
+  const { cdms, loading: cdmLoading } = useCdmData(satellites)
   const [minYear, maxYear] = yearRange
 
+  // Build a fast NORAD-ID → satellite lookup map
+  const satMap = useMemo(() => new Map(satellites.map(s => [s.id, s])), [satellites])
+
+  // Precompute approach data when CDM is selected
+  const approachData = useApproachData(selectedCdm, satMap)
+
+  // Satellite records for the selected CDM
+  const cdmSat1 = selectedCdm ? satMap.get(selectedCdm.norad_id_1) : null
+  const cdmSat2 = selectedCdm ? satMap.get(selectedCdm.norad_id_2) : null
+
   useEffect(() => { setCurrentYear(maxYear) }, [maxYear])
+
+  // Reset offset when CDM changes
+  useEffect(() => { setTcaOffsetMin(0) }, [selectedCdm])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -89,6 +100,7 @@ export default function ScrollySection() {
   }, [active])
 
   const handleSlider = useCallback(e => setCurrentYear(Number(e.target.value)), [])
+  const handleOffsetChange = useCallback(v => setTcaOffsetMin(v), [])
 
   const setTypeCategory = useCallback(category => {
     setTypeFilter({ category, country: null, operator: null })
@@ -110,10 +122,6 @@ export default function ScrollySection() {
     return true
   }).length
 
-  const tcaLabel = selectedCdm
-    ? `TCA  ${new Date(selectedCdm.tca_utc).toISOString().slice(0, 16)} UTC`
-    : 'Select a CDM to enable'
-
   return (
     <>
       {/* Chapters 1–4: orbit scene (sticky) + story */}
@@ -121,9 +129,7 @@ export default function ScrollySection() {
         <div className="scrolly-scene">
           <div className="scene-panel">
             <div className="scene-header">
-              <span className="scene-label">
-                {sceneLabel(active)}
-              </span>
+              <span className="scene-label">{sceneLabel(active)}</span>
               <span className="scene-stats">
                 {loading ? 'Loading…' : <><strong>{visibleCount.toLocaleString()}</strong> objects</>}
               </span>
@@ -154,14 +160,11 @@ export default function ScrollySection() {
                 The orbit map estimates each object's current position from the latest{' '}
                 <Tooltip
                   label="TLE stands for Two-Line Element: a compact text record that describes an object's orbit, used here to estimate where it is around Earth."
-                  multiline
-                  width={260}
-                  withArrow
-                  position="top"
+                  multiline width={260} withArrow position="top"
                 >
                   <span className="term-help" tabIndex={0}>TLE</span>
                 </Tooltip>{' '}
-                available in our data, then filters out objects that are no longer in orbit. Their positions are recomputed every few seconds, giving an approximate real-time view of how objects move around Earth. Drag the slider to reveal how today's orbital population built up over launch history.
+                available in our data, then filters out objects that are no longer in orbit. Drag the slider to reveal how today's orbital population built up over launch history.
               </>
             }
             isActive={active === 'chapter-1'}
@@ -171,20 +174,11 @@ export default function ScrollySection() {
                 Launch year: <strong>{currentYear}</strong>
               </label>
               <input
-                type="range"
-                min={minYear}
-                max={maxYear}
-                value={currentYear}
-                onChange={handleSlider}
-                className="year-slider"
+                type="range" min={minYear} max={maxYear} value={currentYear}
+                onChange={handleSlider} className="year-slider"
               />
             </div>
-            <GrowthChart
-              satellites={satellites}
-              currentYear={currentYear}
-              yearRange={yearRange}
-              isActive={active === 'chapter-1'}
-            />
+            <GrowthChart satellites={satellites} currentYear={currentYear} yearRange={yearRange} isActive={active === 'chapter-1'} />
           </Chapter>
 
           <Chapter
@@ -204,11 +198,7 @@ export default function ScrollySection() {
             body="Orbital space is not evenly shared. A few countries and operators account for much of the current population. Hover a bar to isolate that group on the map."
             isActive={active === 'chapter-3'}
           >
-            <OwnershipChart
-              satellites={satellites}
-              highlight={ownershipHighlight}
-              onHighlight={setOwnershipHighlight}
-            />
+            <OwnershipChart satellites={satellites} highlight={ownershipHighlight} onHighlight={setOwnershipHighlight} />
           </Chapter>
 
           <Chapter
@@ -221,19 +211,12 @@ export default function ScrollySection() {
             <div className="view-toggle">
               <button
                 className={`view-toggle-btn${typeView === 'simple' ? ' view-toggle-btn--active' : ''}`}
-                onClick={() => {
-                  setTypeView('simple')
-                  setTypeFilter(prev => ({ category: prev.category, country: null, operator: null }))
-                }}
-              >
-                Simple view
-              </button>
+                onClick={() => { setTypeView('simple'); setTypeFilter(prev => ({ category: prev.category, country: null, operator: null })) }}
+              >Simple view</button>
               <button
                 className={`view-toggle-btn${typeView === 'wheel' ? ' view-toggle-btn--active' : ''}`}
                 onClick={() => setTypeView('wheel')}
-              >
-                Wheel view
-              </button>
+              >Wheel view</button>
             </div>
             {typeView === 'simple' ? (
               <>
@@ -243,87 +226,37 @@ export default function ScrollySection() {
                       key={filter.value}
                       className={`filter-btn${typeFilter.category === filter.value && !typeFilter.country && !typeFilter.operator ? ' filter-btn--active' : ''}`}
                       onClick={() => setTypeCategory(filter.value)}
-                    >
-                      {filter.label}
-                    </button>
+                    >{filter.label}</button>
                   ))}
                 </div>
-                <TypeBreakdownChart
-                  satellites={satellites}
-                  selectedCategory={typeFilter.category}
-                  onSelectCategory={setTypeCategory}
-                />
+                <TypeBreakdownChart satellites={satellites} selectedCategory={typeFilter.category} onSelectCategory={setTypeCategory} />
               </>
             ) : (
-              <TypeOwnershipWheel
-                satellites={satellites}
-                filter={typeFilter}
-                onFilterChange={setTypeFilter}
-              />
+              <TypeOwnershipWheel satellites={satellites} filter={typeFilter} onFilterChange={setTypeFilter} />
             )}
           </Chapter>
         </div>
       </section>
 
-      {/* Chapter 5: Kessler syndrome — simulator + real debris data */}
+      {/* Chapter 5: Kessler syndrome */}
       <section className="scrolly-solo">
         <Chapter
           id="chapter-5"
           number={5}
           title="Kessler Syndrome"
-          body="One collision can trigger a cascade: each fragment becomes a projectile capable of generating more. Above a critical orbital density, this self-sustaining chain reaction could render entire shells permanently unusable. The simulation below illustrates the mechanics; the data below that shows the historical record."
+          body="One collision can trigger a cascade: each fragment becomes a projectile capable of generating more. Above a critical orbital density, this self-sustaining chain reaction could render entire shells permanently unusable. Click any satellite to see it begin."
           isActive={active === 'chapter-5'}
         >
           <KesslerSimulator height="340px" />
-
-          <div className="kessler-data">
-            <div className="kessler-events-col">
-              <div className="kessler-col-label">Real events</div>
-              <div className="kessler-event-list">
-                {KESSLER_EVENTS.map(ev => (
-                  <div
-                    key={ev.id}
-                    className={`kessler-event${hoveredEvent?.id === ev.id ? ' kessler-event--hovered' : ''}`}
-                    onMouseEnter={() => setHoveredEvent(ev)}
-                    onMouseLeave={() => setHoveredEvent(null)}
-                  >
-                    <span className="kessler-event-year">{ev.year}</span>
-                    <div className="kessler-event-body">
-                      <div className="kessler-event-name">{ev.name}</div>
-                      <div className="kessler-event-debris">{ev.debrisAdded}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="kessler-graph-col">
-              <div className="filter-row" style={{ marginBottom: '0.5rem' }}>
-                {DEBRIS_SIZE_FILTERS.map(size => (
-                  <button
-                    key={size}
-                    className={`filter-btn${debrisSizeFilter === size ? ' filter-btn--active' : ''}`}
-                    onClick={() => setDebrisSizeFilter(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-              <DebrisHistoryChart 
-                satellites={satellites}
-                hoveredEvent={hoveredEvent}
-                height="280px"
-              />
-            </div>
-          </div>
+          <DebrisGrowthChart />
         </Chapter>
       </section>
 
-      {/* Chapters 6 & 7: CDM table (sticky) + approach viz + error tubes */}
+      {/* Chapters 6 & 7: CDM table (sticky) + approach viz + error ellipses */}
       <section className="scrolly scrolly--half">
         <div className="scrolly-scene">
           <div className="scene-panel">
-            <CdmTable selectedCdm={selectedCdm} onSelect={setSelectedCdm} />
+            <CdmTable cdms={cdms} loading={cdmLoading} selectedCdm={selectedCdm} onSelect={setSelectedCdm} />
           </div>
         </div>
 
@@ -331,70 +264,80 @@ export default function ScrollySection() {
           <Chapter
             id="chapter-6"
             number={6}
-            title='Visualizing the "Invisible" Risk'
-            body="Select a conjunction event from the table. The miss distance only becomes meaningful once you translate it into a human scale — the comparison below does exactly that."
+            title="Close Calls in Orbit"
+            body="The table opposite lists real events from recent months where two orbiting objects came dangerously close to each other. These are called conjunction events. Click any row to explore what happened."
             isActive={active === 'chapter-6'}
           >
             <div className="cdm-sat-cards">
-              <SatelliteCard label="Object 1" role="primary" sat={null} />
-              <SatelliteCard label="Object 2" role="secondary" sat={null} />
+              <SatelliteCard label="Object 1" role="primary" sat={cdmSat1} />
+              <SatelliteCard label="Object 2" role="secondary" sat={cdmSat2} />
             </div>
 
-            <VizBox
-              label="Orbit Pair Canvas"
-              note="2D canvas · both orbital paths drawn from TLE satrec · coloured dots track each satellite at the slider time · connecting line at closest approach with distance label"
-              height="300px"
+            <Explainer label="How do we know where satellites will be?">
+              <p>
+                There is no GPS in space — satellites don't broadcast their position. Instead, ground stations track them with radar, then feed that data into a simplified physics model called a <strong>TLE (Two-Line Element set)</strong>. A computer then <strong>propagates</strong> that model forward: it runs the orbital equations to estimate where the satellite will be at any future moment.
+              </p>
+              <p>
+                The chart below shows this estimate — the predicted separation between the two objects in the 40 minutes around their closest point. The bottom of the V-curve is the <strong>TCA (Time of Closest Approach)</strong>: the moment they are nearest.
+              </p>
+            </Explainer>
+
+            <ApproachChart
+              cdm={selectedCdm}
+              approachData={approachData}
+              offsetMin={tcaOffsetMin}
+              onOffsetChange={handleOffsetChange}
             />
 
-            <div className="cdm-time-control">
-              <div className="cdm-time-labels">
-                <span>TCA − 3 h</span>
-                <span className="cdm-time-center">{tcaLabel}</span>
-                <span>TCA + 3 h</span>
-              </div>
-              <input
-                type="range"
-                className="year-slider"
-                min={-180}
-                max={180}
-                defaultValue={0}
-                disabled={!selectedCdm}
-              />
-            </div>
+            <Explainer label="Why is the chart minimum different from the table miss distance?" variant="warning">
+              <p>
+                The chart uses a model called <strong>SGP4</strong> — fast and freely available, but accurate only to about 1–5 km. Space agencies compute the authoritative miss distance using much higher-quality tracking data and more powerful algorithms. That is the value you see in the table. The chart shows the <em>shape</em> of the approach; the table shows the definitive closest distance.
+              </p>
+            </Explainer>
 
-            <VizBox
-              label="Approach Distance Graph"
-              note="D3 line chart · distance (m) vs time · ±3 h around TCA · computed by propagating both satellites every 2 min with SGP4 · vertical playhead linked to time slider · minimum approach annotated"
-              height="180px"
-            />
+            <Explainer label="What does this miss distance feel like at a human scale?">
+              <p>
+                Satellites travel at roughly <strong>25,200 km/h</strong> — about 315 times faster than a car on the highway. To make the miss distance feel real, we scale it down proportionally to highway speed (80 km/h). At that scale, a 5-meter orbital miss becomes about <strong>1.6 cm</strong> — narrower than a finger. Press Play below to watch the two objects approach and narrowly pass each other.
+              </p>
+            </Explainer>
 
-            <VizBox
-              label="Car Highway Comparison"
-              note={
-                selectedCdm
-                  ? `SVG · two cars on a road · gap proportional to ${selectedCdm.min_rng_m.toLocaleString()} m miss distance · time-to-contact label at orbital speed (~7 km/s) · car length as scale reference`
-                  : 'SVG · two cars on a road · gap and time-to-contact scale to the selected CDM · select a row to populate'
-              }
-              height="160px"
+            <CarAnimationMiss
+              cdm={selectedCdm}
+              approachData={approachData}
+              mode="miss"
+              onProgress={handleOffsetChange}
             />
           </Chapter>
 
           <Chapter
             id="chapter-7"
             number={7}
-            title="The Margin of Error"
-            body="Satellites are not points — they are probability volumes. The covariance ellipses below show why a seemingly safe miss distance can still be classified as an emergency."
+            title="We Don't Know Exactly Where They Are"
+            body="A miss distance of a few metres sounds close — but it assumes our predictions are perfectly accurate. They are not. Every prediction carries uncertainty, and that uncertainty is often larger than the miss distance itself."
             isActive={active === 'chapter-7'}
           >
-            <VizBox
-              label="Covariance Ellipse Visualization"
-              note={
-                selectedCdm
-                  ? `Canvas · two uncertainty ellipses at TCA position · ellipse axes from TLE epoch uncertainty · overlap region shaded · Pc = ${selectedCdm.pc != null ? selectedCdm.pc.toExponential(2) : '—'} labelled`
-                  : 'Canvas · two uncertainty ellipses at TCA position · axes from TLE epoch age · overlap shaded · Pc labelled · select a CDM to populate'
-              }
-              height="340px"
+            <Explainer label="What is position uncertainty?" variant="method">
+              <p>
+                When we propagate a TLE forward in time, the result is not a precise point — it's a <strong>probability cloud</strong>. The older the tracking data, the larger that cloud grows. Space agencies model this uncertainty as an <strong>error ellipsoid</strong>: a 3-D region where the satellite is most likely to be found.
+              </p>
+              <p>
+                The visualization below shows a cross-section of those ellipsoids at the moment of closest approach. If the two clouds overlap, a collision is possible even if our best-guess positions say they'll miss. The gap between the two ellipses is almost invisible compared to the ellipses themselves — which is precisely what makes these events so hard to assess.
+              </p>
+            </Explainer>
+
+            <Explainer label="Why the propagation model misses the actual close approach" variant="warning">
+              <p>
+                The animation below runs the same SGP4 propagation used in the approach chart, but scaled to highway speed. Notice that the cars <strong>never get as close as the CDM miss distance</strong> suggests — the model predicts a much larger gap at TCA. This is the imprecision of SGP4: it cannot predict a near-miss to metre-level accuracy. The covariance ellipses below are how we quantify and communicate that uncertainty.
+              </p>
+            </Explainer>
+
+            <CarAnimationMiss
+              cdm={selectedCdm}
+              approachData={approachData}
+              mode="propagation"
             />
+
+            <CovarianceViz cdm={selectedCdm} satMap={satMap} />
           </Chapter>
         </div>
       </section>

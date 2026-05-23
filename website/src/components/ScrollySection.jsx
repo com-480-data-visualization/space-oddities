@@ -124,6 +124,13 @@ export default function ScrollySection() {
 
   return (
     <>
+      {/* Intro hook */}
+      <section className="story-intro">
+        <p className="story-intro-text">
+          There are over <strong>40,000 objects</strong> orbiting Earth right now. About 27,000 of them are debris — dead satellites, rocket parts, and shrapnel from collisions. They travel at <strong>7 km/s</strong>: fast enough that a 1 cm fragment hits with the energy of a hand grenade. This is what that looks like, and why it matters.
+        </p>
+      </section>
+
       {/* Chapters 1–4: orbit scene (sticky) + story */}
       <section className="scrolly">
         <div className="scrolly-scene">
@@ -154,7 +161,7 @@ export default function ScrollySection() {
           <Chapter
             id="chapter-1"
             number={1}
-            title="The Exponential Growth"
+            title="The Sky Is Getting Crowded"
             body={
               <>
                 The orbit map estimates each object's current position from the latest{' '}
@@ -164,7 +171,7 @@ export default function ScrollySection() {
                 >
                   <span className="term-help" tabIndex={0}>TLE</span>
                 </Tooltip>{' '}
-                available in our data, then filters out objects that are no longer in orbit. Drag the slider to reveal how today's orbital population built up over launch history.
+                available in our data, then filters out objects that are no longer in orbit. Drag the slider to see how fast the population has grown — and how steeply it accelerated in the last decade.
               </>
             }
             isActive={active === 'chapter-1'}
@@ -204,8 +211,8 @@ export default function ScrollySection() {
           <Chapter
             id="chapter-4"
             number={4}
-            title="Payloads vs. Debris"
-            body="Not everything in orbit is a working satellite. The map separates payloads, debris, rocket bodies, and other tracked objects."
+            title="Most of It Is Junk"
+            body="Not everything in orbit is a working satellite. Rocket stages, dead spacecraft, and collision fragments now outnumber active payloads. That debris doesn't float harmlessly — at orbital speed, even a centimetre-sized fragment carries the energy of a hand grenade, and one collision creates thousands more pieces."
             isActive={active === 'chapter-4'}
           >
             <div className="view-toggle">
@@ -243,8 +250,8 @@ export default function ScrollySection() {
         <Chapter
           id="chapter-5"
           number={5}
-          title="Kessler Syndrome"
-          body="One collision can trigger a cascade: each fragment becomes a projectile capable of generating more. Above a critical orbital density, this self-sustaining chain reaction could render entire shells permanently unusable. Click any satellite to see it begin."
+          title="One Collision Can Trigger a Chain Reaction"
+          body="Each new fragment becomes a projectile capable of causing another collision. Above a critical debris density, this feedback loop becomes self-sustaining — no new launches needed, the shell destroys itself. Click any satellite in the simulation to watch it begin. The chart below tracks how close we already are."
           isActive={active === 'chapter-5'}
         >
           <KesslerSimulator height="340px" />
@@ -264,14 +271,21 @@ export default function ScrollySection() {
           <Chapter
             id="chapter-6"
             number={6}
-            title="Close Calls in Orbit"
-            body="The table opposite lists real events from recent months where two orbiting objects came dangerously close to each other. These are called conjunction events. Click any row to explore what happened."
+            title="Near-Misses Happen Every Day"
+            body="Space agencies issue hundreds of collision warnings every week. Most dissolve on closer inspection — but not all. The table shows real conjunction events from recent months: cases where two objects passed close enough that a collision was a genuine possibility. Some of those miss distances are smaller than your kitchen. Click any row to explore what happened."
             isActive={active === 'chapter-6'}
           >
             <div className="cdm-sat-cards">
               <SatelliteCard label="Object 1" role="primary" sat={cdmSat1} />
               <SatelliteCard label="Object 2" role="secondary" sat={cdmSat2} />
             </div>
+
+            <CarAnimationMiss
+              cdm={selectedCdm}
+              approachData={approachData}
+              mode="miss"
+              onProgress={handleOffsetChange}
+            />
 
             <Explainer label="How do we know where satellites will be?">
               <p>
@@ -294,26 +308,13 @@ export default function ScrollySection() {
                 The chart uses a model called <strong>SGP4</strong> — fast and freely available, but accurate only to about 1–5 km. Space agencies compute the authoritative miss distance using much higher-quality tracking data and more powerful algorithms. That is the value you see in the table. The chart shows the <em>shape</em> of the approach; the table shows the definitive closest distance.
               </p>
             </Explainer>
-
-            <Explainer label="What does this miss distance feel like at a human scale?">
-              <p>
-                Satellites travel at roughly <strong>25,200 km/h</strong> — about 315 times faster than a car on the highway. To make the miss distance feel real, we scale it down proportionally to highway speed (80 km/h). At that scale, a 5-meter orbital miss becomes about <strong>1.6 cm</strong> — narrower than a finger. Press Play below to watch the two objects approach and narrowly pass each other.
-              </p>
-            </Explainer>
-
-            <CarAnimationMiss
-              cdm={selectedCdm}
-              approachData={approachData}
-              mode="miss"
-              onProgress={handleOffsetChange}
-            />
           </Chapter>
 
           <Chapter
             id="chapter-7"
             number={7}
-            title="We Don't Know Exactly Where They Are"
-            body="A miss distance of a few metres sounds close — but it assumes our predictions are perfectly accurate. They are not. Every prediction carries uncertainty, and that uncertainty is often larger than the miss distance itself."
+            title="Our Predictions Are Often Wrong"
+            body="A miss distance of a few metres sounds alarming — but it assumes our calculations are perfectly accurate. They are not. Every orbital prediction carries uncertainty, and that uncertainty is often larger than the miss distance itself. We are making life-or-death calls about collisions using models that can be off by kilometres."
             isActive={active === 'chapter-7'}
           >
             <Explainer label="What is position uncertainty?" variant="method">
@@ -322,12 +323,6 @@ export default function ScrollySection() {
               </p>
               <p>
                 The visualization below shows a cross-section of those ellipsoids at the moment of closest approach. If the two clouds overlap, a collision is possible even if our best-guess positions say they'll miss. The gap between the two ellipses is almost invisible compared to the ellipses themselves — which is precisely what makes these events so hard to assess.
-              </p>
-            </Explainer>
-
-            <Explainer label="Why the propagation model misses the actual close approach" variant="warning">
-              <p>
-                The animation below runs the same SGP4 propagation used in the approach chart, but scaled to highway speed. Notice that the cars <strong>never get as close as the CDM miss distance</strong> suggests — the model predicts a much larger gap at TCA. This is the imprecision of SGP4: it cannot predict a near-miss to metre-level accuracy. The covariance ellipses below are how we quantify and communicate that uncertainty.
               </p>
             </Explainer>
 
@@ -340,6 +335,13 @@ export default function ScrollySection() {
             <CovarianceViz cdm={selectedCdm} satMap={satMap} />
           </Chapter>
         </div>
+      </section>
+
+      {/* Closing */}
+      <section className="story-outro">
+        <p className="story-outro-text">
+          Each year there are more objects, more warnings, and more uncertainty. There is no international system to remove debris, and no authority to coordinate collision avoidance between competing operators. The question isn't whether a major collision will happen — it's when, and whether we'll be ready.
+        </p>
       </section>
     </>
   )

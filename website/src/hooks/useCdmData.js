@@ -24,7 +24,7 @@ export function useCdmData(satellites) {
           sat_name_1: nameMap.get(String(r.norad_id_1)) || `NORAD ${r.norad_id_1}`,
           sat_name_2: nameMap.get(String(r.norad_id_2)) || `NORAD ${r.norad_id_2}`,
         }))
-        .filter(r => r.pc !== null && Number.isFinite(r.min_rng_m))
+        .filter(r => Number.isFinite(r.min_rng_m))
         // deduplicate: each pair appears twice (A×B and B×A) — keep the one where norad_id_1 < norad_id_2
         .filter(r => Number(r.norad_id_1) < Number(r.norad_id_2))
 

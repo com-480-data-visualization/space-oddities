@@ -1,7 +1,25 @@
+import { useMemo } from 'react'
 import { Badge } from '@mantine/core'
 import './Hero.css'
 
-export default function Hero() {
+function fmt(n) {
+  return n.toLocaleString('en-US')
+}
+
+export default function Hero({ satellites = [], loading }) {
+  const stats = useMemo(() => {
+    if (!satellites.length) return null
+    const debris    = satellites.filter(s => s.category === 'debris').length
+    const payloads  = satellites.filter(s => s.category === 'payload').length
+    const rocketBodies = satellites.filter(s => s.category === 'rocket body').length
+    const total     = satellites.length
+    return { total, debris, payloads, rocketBodies }
+  }, [satellites])
+
+  const total   = stats?.total   ?? null
+  const debris  = stats?.debris  ?? null
+  const payloads = stats?.payloads ?? null
+
   return (
     <section className="hero" id="intro">
       <div className="hero-inner">
@@ -13,24 +31,25 @@ export default function Hero() {
         </p>
         <p className="hero-desc">
           A scrollytelling data visualization of Earth's increasingly congested orbital
-          environment — from Sputnik to Starlink, and the 68,000 tracked objects in between.
+          environment — from Sputnik to Starlink, and the{' '}
+          {loading ? '…' : <strong>{fmt(total)}</strong>} tracked objects in between.
         </p>
         <div className="hero-stats">
           <div className="stat">
-            <span className="stat-value">68,147</span>
-            <span className="stat-label">tracked objects</span>
+            <span className="stat-value">{loading ? '…' : fmt(total)}</span>
+            <span className="stat-label">objects in orbit</span>
           </div>
           <div className="stat">
-            <span className="stat-value">35,749</span>
+            <span className="stat-value">{loading ? '…' : fmt(debris)}</span>
             <span className="stat-label">debris pieces</span>
           </div>
           <div className="stat">
-            <span className="stat-value">3,762</span>
-            <span className="stat-label">CDM alerts</span>
+            <span className="stat-value">{loading ? '…' : fmt(payloads)}</span>
+            <span className="stat-label">active payloads</span>
           </div>
           <div className="stat">
-            <span className="stat-value">1,046</span>
-            <span className="stat-label">at-risk satellite pairs</span>
+            <span className="stat-value">7 km/s</span>
+            <span className="stat-label">orbital speed</span>
           </div>
         </div>
         <a href="#chapter-1" className="hero-cta">Start exploring ↓</a>

@@ -26,6 +26,14 @@
   color: #64748b;
 }
 
+.cdm-data-stamp {
+  font-size: 0.68rem;
+  color: #374151;
+  font-family: "Space Mono", monospace;
+  padding: 0 2px;
+  margin-top: -4px;
+}
+
 /* Filters */
 .cdm-filters {
   display: flex;

@@ -15,7 +15,7 @@ import ApproachChart from './ApproachChart'
 import CarAnimationMiss from './CarAnimationMiss'
 import CovarianceViz from './CovarianceViz'
 import Explainer from './Explainer'
-import { useSatelliteData } from '../hooks/useSatelliteData'
+import ErrorBoundary from './ErrorBoundary'
 import { useCdmData } from '../hooks/useCdmData'
 import { useApproachData } from '../hooks/useApproachData'
 import './ScrollySection.css'
@@ -49,7 +49,7 @@ function sceneLabel(id) {
   return 'Altitudes'
 }
 
-export default function ScrollySection() {
+export default function ScrollySection({ satellites = [], loading = true, yearRange = [1957, 2026] }) {
   const [active, setActive] = useState('chapter-1')
   const [currentYear, setCurrentYear] = useState(2026)
   const [hoverBand, setHoverBand] = useState(null)
@@ -59,12 +59,14 @@ export default function ScrollySection() {
   const [selectedCdm, setSelectedCdm] = useState(null)
   const [tcaOffsetMin, setTcaOffsetMin] = useState(0)
 
-  const { satellites, loading, yearRange } = useSatelliteData()
   const { cdms, loading: cdmLoading } = useCdmData(satellites)
   const [minYear, maxYear] = yearRange
 
   // Build a fast NORAD-ID → satellite lookup map
   const satMap = useMemo(() => new Map(satellites.map(s => [s.id, s])), [satellites])
+
+  const debrisCount  = useMemo(() => satellites.filter(s => s.category === 'debris').length, [satellites])
+  const totalCount   = satellites.length
 
   // Precompute approach data when CDM is selected
   const approachData = useApproachData(selectedCdm, satMap)
@@ -127,7 +129,17 @@ export default function ScrollySection() {
       {/* Intro hook */}
       <section className="story-intro">
         <p className="story-intro-text">
-          There are over <strong>40,000 objects</strong> orbiting Earth right now. About 27,000 of them are debris — dead satellites, rocket parts, and shrapnel from collisions. They travel at <strong>7 km/s</strong>: fast enough that a 1 cm fragment hits with the energy of a hand grenade. This is what that looks like, and why it matters.
+          There are{' '}
+          {loading
+            ? 'tens of thousands of objects'
+            : <><strong>{totalCount.toLocaleString()} objects</strong></>
+          }{' '}
+          orbiting Earth right now. About{' '}
+          {loading
+            ? 'half'
+            : <strong>{debrisCount.toLocaleString()}</strong>
+          }{' '}
+          of them are debris — dead satellites, rocket parts, and shrapnel from collisions. They travel at <strong>7 km/s</strong>: fast enough that a 1 cm fragment hits with the energy of a hand grenade. This is what that looks like, and why it matters.
         </p>
       </section>
 
@@ -260,6 +272,7 @@ export default function ScrollySection() {
       </section>
 
       {/* Chapters 6 & 7: CDM table (sticky) + approach viz + error ellipses */}
+      <ErrorBoundary>
       <section className="scrolly scrolly--half">
         <div className="scrolly-scene">
           <div className="scene-panel">
@@ -308,6 +321,23 @@ export default function ScrollySection() {
                 The chart uses a model called <strong>SGP4</strong> — fast and freely available, but accurate only to about 1–5 km. Space agencies compute the authoritative miss distance using much higher-quality tracking data and more powerful algorithms. That is the value you see in the table. The chart shows the <em>shape</em> of the approach; the table shows the definitive closest distance.
               </p>
             </Explainer>
+
+            <Explainer label="Why do some events show no collision probability (Pc)?" variant="method">
+              <p>
+                Space-Track computes Pc only for events it classifies as <strong>"emergency reportable"</strong> — typically those above a risk threshold of roughly 1-in-100,000. For informational warnings where the risk is judged low, no Pc is published. A blank Pc column does not mean the event was safe — it means it was below the threshold where detailed probability modelling was considered necessary.
+              </p>
+            </Explainer>
+
+            <Explainer label="About this data — snapshot, not live">
+              <p>
+                The conjunction events shown here were retrieved from <strong>Space-Track.org on 24 May 2026</strong>, covering the preceding 30 days
+                {cdmLoading ? '' : <> ({cdms.length.toLocaleString()} deduplicated events)</>}.
+                Space-Track publishes only events that exceed internal risk thresholds — this is not an exhaustive catalogue of every close approach.
+              </p>
+              <p>
+                Orbital elements (TLEs) were also fetched on <strong>24 May 2026</strong> for <strong>{loading ? '…' : satellites.length.toLocaleString()}</strong> objects currently in orbit. Positions and separation distances shown are propagated from that snapshot; they do not update in real time. Some recently catalogued objects may lack TLE data, in which case the approach chart and uncertainty visualisation cannot be displayed.
+              </p>
+            </Explainer>
           </Chapter>
 
           <Chapter
@@ -336,6 +366,7 @@ export default function ScrollySection() {
           </Chapter>
         </div>
       </section>
+      </ErrorBoundary>
 
       {/* Closing */}
       <section className="story-outro">

@@ -74,7 +74,7 @@ export default function ApproachChart({ cdm, approachData, offsetMin, onOffsetCh
             fill="#4b5563" fontSize={13}
             fontFamily='"Space Grotesk", sans-serif'
           >
-            {cdm ? 'Computing approach…' : 'Select a conjunction event'}
+            {!cdm ? 'Select a conjunction event' : windowData.length === 0 ? 'TLE data unavailable for one of these objects' : 'Computing approach…'}
           </text>
         </svg>
       </div>

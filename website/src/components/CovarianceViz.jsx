@@ -42,11 +42,22 @@ function useEllipseLayout(cdm, satMap) {
     const innerW = W - margin.left - margin.right
     const innerH = H - margin.top  - margin.bottom
 
-    const sx = (innerW * 0.38) / Math.max(e1.along, e2.along)
-    const sy = (innerH * 0.38) / Math.max(e1.cross, e2.cross)
+    // Initial scale: fit the larger ellipse in ~38% of the drawing area
+    let sx = (innerW * 0.38) / Math.max(e1.along, e2.along)
+    let sy = (innerH * 0.38) / Math.max(e1.cross, e2.cross)
 
-    const cx     = W / 2
-    const cy     = margin.top + innerH / 2
+    const cx = W / 2
+    const cy = margin.top + innerH / 2
+
+    // Check if the two ellipses + gap fit vertically. If not, scale down.
+    // Total vertical space needed: missPx + half of each ellipse (ry) + margins
+    const neededH = (missKm * sy) + (e1.cross * sy) + (e2.cross * sy) + 16
+    if (neededH > innerH) {
+      const shrink = innerH / neededH
+      sx *= shrink
+      sy *= shrink
+    }
+
     const missPx = missKm * sy
 
     return {
@@ -65,6 +76,8 @@ export default function CovarianceViz({ cdm, satMap }) {
   const layout = useEllipseLayout(cdm, satMap)
   const pc     = cdm?.pc
 
+  const noTle = cdm && !layout
+
   if (!layout) {
     return (
       <div className="covariance-wrap">
@@ -72,13 +85,23 @@ export default function CovarianceViz({ cdm, satMap }) {
         <svg viewBox={`0 0 ${W} ${H}`} className="covariance-svg">
           <rect width={W} height={H} fill="#040810" />
           <text
-            x={W / 2} y={H / 2}
+            x={W / 2} y={H / 2 - 10}
             textAnchor="middle" dominantBaseline="middle"
             fill="#4b5563" fontSize={13}
             fontFamily='"Space Grotesk", sans-serif'
           >
-            Select a conjunction event
+            {noTle ? 'TLE data unavailable for one of these objects' : 'Select a conjunction event'}
           </text>
+          {noTle && (
+            <text
+              x={W / 2} y={H / 2 + 12}
+              textAnchor="middle" dominantBaseline="middle"
+              fill="#374151" fontSize={10}
+              fontFamily='"Space Grotesk", sans-serif'
+            >
+              Some recently catalogued objects do not yet have a tracked orbit
+            </text>
+          )}
         </svg>
       </div>
     )

@@ -54,3 +54,57 @@
   font-size: 0.82rem;
   color: var(--muted);
 }
+
+.team-data-notice {
+  margin-top: 2.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  max-width: 760px;
+}
+
+.team-data-heading {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.team-data-list {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.team-data-list li {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.team-data-list li strong {
+  color: var(--text);
+}
+
+.team-data-list a {
+  color: #60a5fa;
+  text-decoration: none;
+}
+
+.team-data-list a:hover {
+  text-decoration: underline;
+}
+
+.team-data-caveat {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #4b5563;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+}

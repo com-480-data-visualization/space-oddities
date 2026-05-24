@@ -71,6 +71,9 @@ export default function CdmTable({ cdms, loading, selectedCdm, onSelect }) {
           {loading ? 'Loading…' : `${sorted.length} / ${cdms.length} shown`}
         </span>
       </div>
+      <div className="cdm-data-stamp">
+        Snapshot · 24 Apr – 24 May 2026 · Space-Track.org
+      </div>
 
       <div className="cdm-filters">
         <input

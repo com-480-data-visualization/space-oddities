@@ -134,10 +134,11 @@ export default function CovarianceViz({ cdm, satMap }) {
           ← along-track (velocity direction)
         </text>
         <text
-          x={margin.left - 10} y={cy}
-          textAnchor="middle" fontSize={10} fill="#4b5563"
+          x={8} y={cy}
+          textAnchor="middle" fill="#4b5563"
           fontFamily='"Space Grotesk", sans-serif'
-          transform={`rotate(-90, ${margin.left - 10}, ${cy})`}
+          fontSize={9}
+          transform={`rotate(-90, 8, ${cy})`}
         >
           cross-track →
         </text>

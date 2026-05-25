@@ -62,6 +62,12 @@ function cleanLabel(value) {
   return label || 'Unknown'
 }
 
+function cleanOperator(row) {
+  const raw = cleanLabel(row['operator/owner'])
+  if (raw.toLowerCase() === 'spacex') return 'SpaceX'
+  return raw
+}
+
 function cleanCountry(row) {
   const raw = cleanLabel(row['country/org_of_un_registry'] || row.COUNTRY)
   if (raw.startsWith('NR ')) return 'Unknown'
@@ -110,7 +116,7 @@ export function useSatelliteData() {
             id: noradId,
             name: row.OBJECT_NAME || row.object_name || 'Unknown',
             country: cleanCountry(row),
-            operator: cleanLabel(row['operator/owner']),
+            operator: cleanOperator(row),
             category: normalizeCategory(row),
             launchYear: parseLaunchYear(row),
             satrec,

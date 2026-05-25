@@ -110,6 +110,8 @@ export default function CovarianceViz({ cdm, satMap }) {
   const { e1, e2, e1rx, e1ry, e2rx, e2ry, cx, cy, o1y, o2y, missPx } = layout
   const overlapRx = Math.min(e1rx, e2rx) * 0.6
   const overlapRy = Math.abs(missPx / 2) + Math.min(e1ry, e2ry) * 0.4
+  const satName1 = cdm.sat_name_1?.split(' ').slice(0, 2).join(' ')
+  const satName2 = cdm.sat_name_2?.split(' ').slice(0, 2).join(' ')
 
   return (
     <div className="covariance-wrap">
@@ -163,13 +165,27 @@ export default function CovarianceViz({ cdm, satMap }) {
 
         {/* Object dots */}
         <circle cx={cx} cy={o1y} r={4} fill="#22d3ee" stroke="#0f172a" strokeWidth={1.5} />
-        <text x={cx + e1rx + 6} y={o1y + 4} fontSize={10} fill="#22d3ee" fontFamily='"Space Grotesk", sans-serif'>
-          {cdm.sat_name_1?.split(' ').slice(0, 2).join(' ')}
+        <text
+          x={cx - e1rx - 8}
+          y={o1y - 2}
+          textAnchor="end"
+          fontSize={10}
+          fill="#22d3ee"
+          fontFamily='"Space Grotesk", sans-serif'
+        >
+          {satName1}
         </text>
 
         <circle cx={cx} cy={o2y} r={4} fill="#f97316" stroke="#0f172a" strokeWidth={1.5} />
-        <text x={cx + e2rx + 6} y={o2y + 4} fontSize={10} fill="#f97316" fontFamily='"Space Grotesk", sans-serif'>
-          {cdm.sat_name_2?.split(' ').slice(0, 2).join(' ')}
+        <text
+          x={cx + e2rx + 8}
+          y={o2y + 10}
+          textAnchor="start"
+          fontSize={10}
+          fill="#f97316"
+          fontFamily='"Space Grotesk", sans-serif'
+        >
+          {satName2}
         </text>
 
         {/* Miss distance line */}

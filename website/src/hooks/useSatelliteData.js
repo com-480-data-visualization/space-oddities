@@ -64,6 +64,8 @@ function cleanLabel(value) {
 
 function cleanOperator(row) {
   const raw = cleanLabel(row['operator/owner'])
+  const name = String(row.OBJECT_NAME || row.object_name || row.SATNAME || '').trim().toUpperCase()
+  if (name.startsWith('STARLINK') && (raw === 'Unknown' || raw.toLowerCase() === 'spacex')) return 'SpaceX'
   if (raw.toLowerCase() === 'spacex') return 'SpaceX'
   return raw
 }

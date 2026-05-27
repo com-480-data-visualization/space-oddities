@@ -285,7 +285,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
             id="chapter-6"
             number={6}
             title="Near-Misses Happen Every Day"
-            body="Space agencies issue hundreds of collision warnings every week. Most dissolve on closer inspection — but not all. The table shows real conjunction events from recent months: cases where two objects passed close enough that a collision was a genuine possibility. Some of those miss distances are smaller than your kitchen. Click any row to explore what happened."
+            body="Space agencies issue hundreds of collision warnings every week. Most are ruled out on closer inspection, but not all. The table shows real conjunction events from recent months: cases where two objects passed close enough that a collision was a genuine possibility. Some of those miss distances are smaller than your kitchen. Click any row to explore what happened."
             isActive={active === 'chapter-6'}
           >
             <div className="cdm-sat-cards">
@@ -302,10 +302,10 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
 
             <Explainer label="How do we know where satellites will be?">
               <p>
-                There is no GPS in space — satellites don't broadcast their position. Instead, ground stations track them with radar, then feed that data into a simplified physics model called a <strong>TLE (Two-Line Element set)</strong>. A computer then <strong>propagates</strong> that model forward: it runs the orbital equations to estimate where the satellite will be at any future moment.
+                Most tracked objects do not publicly broadcast their position. Instead, ground stations track them with radar, then feed that data into a simplified physics model called a <strong>TLE (Two-Line Element set)</strong>. A computer then <strong>propagates</strong> that model forward: it runs the orbital equations to estimate where the satellite will be at any future moment. This is the same method used to draw the orbit map in the earlier chapters.
               </p>
               <p>
-                The chart below shows this estimate — the predicted separation between the two objects in the 40 minutes around their closest point. The bottom of the V-curve is the <strong>TCA (Time of Closest Approach)</strong>: the moment they are nearest.
+                For each warning in the table, we propagate both objects around the predicted encounter time. The chart below shows how their estimated separation changes during the 40 minutes around closest approach. The bottom of the V-curve is the <strong>TCA (Time of Closest Approach)</strong>: the moment they are nearest.
               </p>
             </Explainer>
 
@@ -318,21 +318,21 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
 
             <Explainer label="Why is the chart minimum different from the table miss distance?" variant="warning">
               <p>
-                The chart uses a model called <strong>SGP4</strong> — fast and freely available, but accurate only to about 1–5 km. Space agencies compute the authoritative miss distance using much higher-quality tracking data and more powerful algorithms. That is the value you see in the table. The chart shows the <em>shape</em> of the approach; the table shows the definitive closest distance.
+                The chart uses a model called <strong>SGP4</strong> which is fast and freely available, but accurate only to about 1–5 km. Space agencies compute the authoritative miss distance using much higher-quality tracking data and more powerful algorithms. That is the value you see in the table. The chart shows the <em>shape</em> of the approach; the table shows the definitive closest distance.
               </p>
             </Explainer>
 
             <Explainer label="Why do some events show no collision probability (Pc)?" variant="method">
               <p>
-                Space-Track computes Pc only for events it classifies as <strong>"emergency reportable"</strong> — typically those above a risk threshold of roughly 1-in-100,000. For informational warnings where the risk is judged low, no Pc is published. A blank Pc column does not mean the event was safe — it means it was below the threshold where detailed probability modelling was considered necessary.
+                Space-Track computes Pc only for events it classifies as <strong>"emergency reportable"</strong>: typically those above a risk threshold of roughly 1-in-100,000. For informational warnings where the risk is judged low, no Pc is published. A blank Pc column does not mean the event was safe, it means it was below the threshold where detailed probability modelling was considered necessary.
               </p>
             </Explainer>
 
-            <Explainer label="About this data — snapshot, not live">
+            <Explainer label="About this data: snapshot, not live">
               <p>
                 The conjunction events shown here were retrieved from <strong>Space-Track.org on 24 May 2026</strong>, covering the preceding 30 days
                 {cdmLoading ? '' : <> ({cdms.length.toLocaleString()} deduplicated events)</>}.
-                Space-Track publishes only events that exceed internal risk thresholds — this is not an exhaustive catalogue of every close approach.
+                Space-Track publishes only events that exceed internal risk thresholds, this is not an exhaustive catalogue of every close approach.
               </p>
               <p>
                 Orbital elements (TLEs) were also fetched on <strong>24 May 2026</strong> for <strong>{loading ? '…' : satellites.length.toLocaleString()}</strong> objects currently in orbit. Positions and separation distances shown are propagated from that snapshot; they do not update in real time. Some recently catalogued objects may lack TLE data, in which case the approach chart and uncertainty visualisation cannot be displayed.
@@ -344,15 +344,15 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
             id="chapter-7"
             number={7}
             title="Our Predictions Are Often Wrong"
-            body="A miss distance of a few metres sounds alarming — but it assumes our calculations are perfectly accurate. They are not. Every orbital prediction carries uncertainty, and that uncertainty is often larger than the miss distance itself. We are making life-or-death calls about collisions using models that can be off by kilometres."
+            body="A miss distance of a few metres sounds alarming, but it assumes our calculations are perfectly accurate. They are not. Every orbital prediction carries uncertainty, and that uncertainty is often larger than the miss distance itself. We are making high-stakes calls about collisions using models that can be off by kilometres."
             isActive={active === 'chapter-7'}
           >
             <Explainer label="What is position uncertainty?" variant="method">
               <p>
-                When we propagate a TLE forward in time, the result is not a precise point — it's a <strong>probability cloud</strong>. The older the tracking data, the larger that cloud grows. Space agencies model this uncertainty as an <strong>error ellipsoid</strong>: a 3-D region where the satellite is most likely to be found.
+                When we propagate a TLE forward in time, the result is not a precise point, it's a <strong>probability cloud</strong>. The older the tracking data, the larger that cloud grows. Space agencies model this uncertainty as an <strong>error ellipsoid</strong>: a 3-D region where the satellite is most likely to be found.
               </p>
               <p>
-                The visualization below shows a cross-section of those ellipsoids at the moment of closest approach. If the two clouds overlap, a collision is possible even if our best-guess positions say they'll miss. The gap between the two ellipses is almost invisible compared to the ellipses themselves — which is precisely what makes these events so hard to assess.
+                The visualization below shows a cross-section of those ellipsoids at the moment of closest approach. If the two clouds overlap, a collision is possible even if our best-guess positions say they'll miss. The gap between the two ellipses is almost invisible compared to the ellipses themselves, which is precisely what makes these events so hard to assess.
               </p>
             </Explainer>
 
@@ -371,7 +371,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
       {/* Closing */}
       <section className="story-outro">
         <p className="story-outro-text">
-          Each year there are more objects, more warnings, and more uncertainty. There is no international system to remove debris, and no authority to coordinate collision avoidance between competing operators. The question isn't whether a major collision will happen — it's when, and whether we'll be ready.
+          Each year there are more objects, more warnings, and more uncertainty. There is no international system to remove debris, and no authority to coordinate collision avoidance between competing operators. The question isn't whether a major collision will happen, it's when, and whether we'll be ready.
         </p>
       </section>
     </>

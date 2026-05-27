@@ -29,17 +29,17 @@ export default function Team() {
         <p className="team-data-heading">Data sources &amp; freshness</p>
         <ul className="team-data-list">
           <li>
-            <strong>Orbital elements (TLEs)</strong> — fetched from{' '}
+            <strong>Orbital elements (TLEs)</strong> - fetched from{' '}
             <a href="https://celestrak.org" target="_blank" rel="noopener noreferrer">CelesTrak</a>{' '}
             and <a href="https://www.space-track.org" target="_blank" rel="noopener noreferrer">Space-Track.org</a>{' '}
             on <strong>24 May 2026</strong>. Positions shown are propagated from this snapshot using SGP4.
           </li>
           <li>
-            <strong>Conjunction events (CDMs)</strong> — last 30 days retrieved from Space-Track
-            on <strong>24 May 2026</strong> (2,129 deduplicated events; Space-Track publishes only those above internal risk thresholds — this is not an exhaustive catalogue).
+            <strong>Conjunction events (CDMs)</strong> - last 30 days retrieved from Space-Track
+            on <strong>24 May 2026</strong> (2,129 deduplicated events; Space-Track publishes only those above internal risk thresholds, this is not an exhaustive catalogue).
           </li>
           <li>
-            <strong>Historical debris counts</strong> — sourced from the ESA Space Debris Office annual reports.
+            <strong>Historical debris counts</strong> - sourced from the ESA Space Debris Office annual reports.
           </li>
         </ul>
         <p className="team-data-caveat">

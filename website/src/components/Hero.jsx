@@ -31,7 +31,7 @@ export default function Hero({ satellites = [], loading }) {
         </p>
         <p className="hero-desc">
           A scrollytelling data visualization of Earth's increasingly congested orbital
-          environment — from Sputnik to Starlink, and the{' '}
+          environment: from Sputnik to Starlink, and the{' '}
           {loading ? '…' : <strong>{fmt(total)}</strong>} tracked objects in between.
         </p>
         <div className="hero-stats">
@@ -49,7 +49,7 @@ export default function Hero({ satellites = [], loading }) {
           </div>
           <div className="stat">
             <span className="stat-value">7 km/s</span>
-            <span className="stat-label">orbital speed</span>
+            <span className="stat-label">typical LEO speed</span>
           </div>
         </div>
         <a href="#chapter-1" className="hero-cta">Start exploring ↓</a>

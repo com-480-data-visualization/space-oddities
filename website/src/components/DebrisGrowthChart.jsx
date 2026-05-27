@@ -11,25 +11,25 @@ import './DebrisGrowthChart.css'
 const EVENTS = [
   {
     year: 2007, label: 'Fengyun-1C ASAT', id: 'fengyun', color: '#ef4444', added: '~3 500', anchor: 'top',
-    description: "China destroyed its own Fengyun-1C weather satellite at 865 km altitude — the single largest debris cloud in history. Most of the 3,500+ fragments remain in high orbit and will for centuries.",
+    description: "China destroyed its own Fengyun-1C weather satellite at 865 km altitude, creating the single largest debris cloud in history. Most of the 3,500+ fragments remain in high orbit and will for centuries.",
     fragments: '~3,500 trackable fragments',
     url: 'https://en.wikipedia.org/wiki/2007_Chinese_anti-satellite_missile_test',
   },
   {
-    year: 2009, label: 'Iridium × Cosmos', id: 'iridium', color: '#f97316', added: '~2 000', anchor: 'bottom',
+    year: 2009, label: 'Iridium x Cosmos', id: 'iridium', color: '#f97316', added: '~2 000', anchor: 'bottom',
     description: "The first accidental collision between two intact satellites: Iridium 33 struck defunct Cosmos 2251 at 790 km at 11.6 km/s. The debris cloud still threatens spacecraft in the same orbital shell.",
     fragments: '~2,000 trackable fragments',
     url: 'https://en.wikipedia.org/wiki/2009_satellite_collision',
   },
   {
     year: 2019, label: 'Starlink era', id: 'starlink', color: '#8b5cf6', added: null, anchor: 'top',
-    description: "SpaceX began mass-deploying Starlink in 2019. The constellation has grown to 6,000+ satellites — more than all satellites launched in the prior six decades combined, fundamentally changing orbital density.",
+    description: "SpaceX began mass-deploying Starlink in 2019. The constellation has grown to 6,000+ satellites, more than all satellites launched in the prior six decades combined, fundamentally changing orbital density.",
     fragments: null,
     url: 'https://en.wikipedia.org/wiki/Starlink',
   },
   {
     year: 2021, label: 'Cosmos 1408 ASAT', id: 'cosmos', color: '#ef4444', added: '~1 500', anchor: 'top',
-    description: "Russia's Nudol missile struck Cosmos 1408 at 490 km, generating 1,500+ fragments. ISS astronauts were forced to shelter multiple times as debris swept through their orbit.",
+    description: "Russia's Nudol missile struck Cosmos 1408 at 490 km, generating 1,500+ fragments. ISS astronauts were forced to shelter as debris passed near their orbit.",
     fragments: '~1,500 trackable fragments',
     url: 'https://en.wikipedia.org/wiki/Kosmos_1408',
   },

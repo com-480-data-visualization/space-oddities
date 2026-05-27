@@ -263,7 +263,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
           id="chapter-5"
           number={5}
           title="One Collision Can Trigger a Chain Reaction"
-          body="Each new fragment becomes a projectile capable of causing another collision. Above a critical debris density, this feedback loop becomes self-sustaining — no new launches needed, the shell destroys itself. Click any satellite in the simulation to watch it begin. The chart below tracks how close we already are."
+          body="Each new fragment becomes a projectile capable of causing another collision. Above a critical debris density, this feedback loop becomes self-sustaining. No new launches needed, the shell destroys itself. Click any satellite in the simulation to watch it begin. The chart below tracks how close we already are."
           isActive={active === 'chapter-5'}
         >
           <KesslerSimulator height="340px" />

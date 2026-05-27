@@ -20,7 +20,7 @@ export default function OrbitClassChart({ satellites, onBandHover }) {
 
     const width = 360
     const height = 160
-    const m = { top: 8, right: 8, bottom: 24, left: 8 }
+    const m = { top: 22, right: 8, bottom: 24, left: 8 }
 
     const x = d3.scaleBand().domain(data.map(d => d.label)).range([m.left, width - m.right]).padding(0.35)
     const y = d3.scaleLinear().domain([0, d3.max(data, d => d.value) || 1]).nice().range([height - m.bottom, m.top])
@@ -73,7 +73,7 @@ export default function OrbitClassChart({ satellites, onBandHover }) {
         ref={svgRef}
         className="orbit-class-svg"
         viewBox="0 0 360 160"
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid meet"
       />
     </div>
   )

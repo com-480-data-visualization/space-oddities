@@ -139,7 +139,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
             ? 'half'
             : <strong>{debrisCount.toLocaleString()}</strong>
           }{' '}
-          of them are debris — dead satellites, rocket parts, and shrapnel from collisions. They travel at <strong>7 km/s</strong>: fast enough that a 1 cm fragment hits with the energy of a hand grenade. This is what that looks like, and why it matters.
+          of them are debris: dead satellites, rocket parts, and shrapnel from collisions. In Low Earth Orbit (LEO), they typically travel at <strong>7 km/s</strong>: fast enough that a 1 cm fragment hits with the energy of a hand grenade. This is what that looks like, and why it matters.
         </p>
       </section>
 
@@ -183,7 +183,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
                 >
                   <span className="term-help" tabIndex={0}>TLE</span>
                 </Tooltip>{' '}
-                available in our data, then filters out objects that are no longer in orbit. Drag the slider to see how fast the population has grown — and how steeply it accelerated in the last decade.
+                available in our data, then filters out objects that are no longer in orbit. Drag the slider to see how fast the population has grown, and how steeply it accelerated in the last decade.
               </>
             }
             isActive={active === 'chapter-1'}

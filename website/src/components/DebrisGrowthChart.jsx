@@ -23,7 +23,7 @@ const EVENTS = [
   },
   {
     year: 2019, label: 'Starlink era', id: 'starlink', color: '#8b5cf6', added: null, anchor: 'top',
-    description: "SpaceX began mass-deploying Starlink in 2019. The constellation has grown to 6,000+ satellites, more than all satellites launched in the prior six decades combined, fundamentally changing orbital density.",
+    description: "SpaceX began mass-deploying Starlink in 2019. The constellation has grown to 10,000+ satellites, more than the rest of the world's functioning satellites combined, fundamentally changing orbital density.",
     fragments: null,
     url: 'https://en.wikipedia.org/wiki/Starlink',
   },

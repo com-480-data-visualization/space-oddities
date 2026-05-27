@@ -176,7 +176,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
             title="The Sky Is Getting Crowded"
             body={
               <>
-                The orbit map estimates each object's current position from the latest{' '}
+                The orbit map continously estimates each object's position from the latest{' '}
                 <Tooltip
                   label="TLE stands for Two-Line Element: a compact text record that describes an object's orbit, used here to estimate where it is around Earth."
                   multiline width={260} withArrow position="top"
@@ -224,7 +224,7 @@ export default function ScrollySection({ satellites = [], loading = true, yearRa
             id="chapter-4"
             number={4}
             title="Most of It Is Junk"
-            body="Not everything in orbit is a working satellite. Rocket stages, dead spacecraft, and collision fragments now outnumber active payloads. That debris doesn't float harmlessly — at orbital speed, even a centimetre-sized fragment carries the energy of a hand grenade, and one collision creates thousands more pieces."
+            body="Not everything in orbit is a working satellite. Rocket stages, dead spacecraft, and collision fragments now outnumber active payloads. That debris doesn't float harmlessly: at orbital speed, even a centimetre-sized fragment carries the energy of a hand grenade, and one collision creates thousands more pieces."
             isActive={active === 'chapter-4'}
           >
             <div className="view-toggle">

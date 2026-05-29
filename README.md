@@ -6,7 +6,21 @@
 |Philip Patrick Jan Hamelink|311769|
 |Julien Schluchter|342745|
 
-[Milestone 1](#milestone-1)  [Milestone 2](#milestone-2)  [Milestone 3](#milestone-3)
+[Live Demo](#-live-demo) · [Milestone 1](#milestone-1-20th-march-5pm) · [Milestone 2](#milestone-2) · [Milestone 3](#milestone-3-28th-may-5pm)
+
+---
+
+## 🚀 Live Demo
+
+| | |
+| :-- | :-- |
+| 🌍 **Final website** | [com-480-data-visualization.github.io/space-oddities](https://com-480-data-visualization.github.io/space-oddities/) |
+| 🎥 **Screencast (2 min)** | [youtube.com/watch?v=liPMFObGeAc](https://www.youtube.com/watch?v=liPMFObGeAc) |
+| 📖 **Process Book (PDF)** | [milestones/milestone3/Space_Oddities_Process_Book.pdf](./milestones/milestone3/Space_Oddities_Process_Book.pdf) |
+
+> *Space Oddities* is a data-driven, scrollytelling journey through the orbital traffic jam we've built around Earth — from Sputnik in 1957 to the Starlink era today, told in seven interactive chapters.
+
+---
 
 ## Project Structure
 
@@ -20,15 +34,17 @@ space-oddities/
 ├── images/              # Generated EDA plots and figures
 ├── milestones/          # Project reports and milestone-specific data
 │   ├── milestone1/      # LaTeX source and report for M1
-│   └── milestone2/      # LaTeX source and report for M2
+│   ├── milestone2/      # LaTeX source and report for M2
+│   └── milestone3/      # LaTeX source and process book for M3
 ├── notebooks/           # Jupyter notebooks for exploration
-├── src/                 # Source code
+├── src/                 # Python data pipeline
 │   ├── main.py          # Entry point for the pipeline
 │   ├── pipeline.py      # Core logic for the data flow
 │   ├── fetch_data.py    # API clients for Space-Track/CelesTrak
 │   ├── cleaning.py      # Preprocessing for UCS/SATCAT
 │   ├── merging.py       # Join logic for the unified tables
 │   └── orbit_engine.py  # SGP4 propagation utilities
+├── website/             # React 19 + Vite front-end (served via GitHub Pages)
 ├── requirements.txt     # Python dependencies
 └── README.md
 ```
@@ -72,7 +88,7 @@ The pipeline is executed via `src/main.py`.
 3.  **Merge**:
     *   **Objects Table**: Combines UCS metadata with Space-Track SATCAT status (launch date, country, size).
     *   **TLE Table**: Parses Two-Line Elements into a structured format for propagation.
-    *   **Conjunction Table**: Extracts collision alerts (CDMs) into a list of events.
+    *   **Conjunction Table**: Extracts the most recent 30 days of CDMs, deduplicated to one record per object pair (2,129 events in the 24 May 2026 snapshot).
 4.  **Export**: Saves the resulting tables to `data/processed/` in two formats:
     *   `.csv`: For easy inspection and compatibility.
     *   `.parquet`: For high-performance loading in the visualization dashboard.
@@ -83,6 +99,23 @@ The pipeline generates three primary snapshots in `data/processed/`:
 - `objects.csv/parquet`: Every tracked object in orbit with its metadata.
 - `tle.csv/parquet`: Orbital elements (inclination, RAAN, mean motion) for all objects.
 - `conjunction_events.csv/parquet`: Recent predicted close approaches between satellites.
+
+## Running the Website Locally
+
+The front-end is a React 19 + Vite single-page application that loads the processed data bundled alongside it.
+
+```bash
+cd website
+npm install
+npm run dev
+```
+
+Then open the URL printed by Vite (typically [http://localhost:5173](http://localhost:5173)). For a production preview that mirrors the GitHub Pages deployment:
+
+```bash
+npm run build
+npm run preview
+```
 
 ---
 
@@ -138,7 +171,7 @@ Table 1: Comparison of the main data providers used in the pipeline.
 | Preprocessing | Excel parsing, NORAD ID matching, handling missing values | TLE parsing, filtering, CDM event extraction | CSV parsing, NORAD ID matching |
 | Role in Pipeline | Metadata enrichment | Primary operational data source for TLEs, SATCAT, CDMs | Secondary source for TLEs and SATCAT |
 
-The UCS database contains 7,560 rows and 27 relevant columns; mass data is approximately 2% incomplete. Space-Track's full TLE catalog contains 68,107 entries. CelesTrak's SATCAT catalogs 68,147 tracked objects across 17 columns. It is possible to filter the data to retain only objects currently in orbit, for instance using decay-related fields. We will use Python libraries such as ⁠ Skyfield ⁠ or ⁠ SGP4 ⁠ to convert raw TLEs into metrics such as altitude, inclination, and semi-major axis. Using propagation, we can also use this data to estimate the position of satellites and their current orbit.
+The UCS database contains 7,560 rows and 27 relevant columns; mass data is approximately 2% incomplete. Space-Track's full TLE catalog contains 68,107 entries. CelesTrak's SATCAT catalogs 68,147 tracked objects across 17 columns. It is possible to filter the data to retain only objects currently in orbit, for instance using decay-related fields. We will use Python libraries such as ⁠ Skyfield ⁠ or ⁠ SGP4 ⁠ to convert raw TLEs into metrics such as altitude, inclination, and semi-major axis. Using propagation, we can also use this data to estimate the position of satellites and their current orbit.
 
 ### 1.3 Conjunction Data Messages in Detail
 A CDM is a structured alert issued by US Space Command whenever two tracked objects are projected to pass closer than a safety threshold. Each record contains the identities of both objects, the predicted miss distance at TCA, and a computed collision probability $P_{c}$. 
@@ -147,12 +180,12 @@ Table 2: Real CDM example (Space-Track, issued 19 March 2026). $P_{c} > 10^{-4}$
 
 | Field | Value | Meaning |
 | :--- | :--- | :--- |
-| ⁠ TCA ⁠ | 2026-03-22 16:17 UTC | Time of Closest Approach |
-| ⁠ MIN_RNG ⁠ | 385 m | Predicted miss distance |
-| ⁠ PC ⁠ | $5.6\times10^{-4}$ | Collision probability |
-| ⁠ EMERGENCY_REPORTABLE ⁠ | Y | Exceeds reporting threshold |
-| ⁠ SAT_1 ⁠ / ⁠ SAT1_OBJECT_TYPE ⁠ | GEOSAT (NORAD 15595) / PAYLOAD (LARGE RCS) | Active payload (US Navy) |
-| ⁠ SAT_2 ⁠ / ⁠ SAT2_OBJECT_TYPE ⁠ | PSLV R/B (NORAD 39093) / ROCKET BODY (LARGE RCS) | Abandoned rocket body |
+| ⁠ TCA ⁠ | 2026-03-22 16:17 UTC | Time of Closest Approach |
+| ⁠ MIN_RNG ⁠ | 385 m | Predicted miss distance |
+| ⁠ PC ⁠ | $5.6\times10^{-4}$ | Collision probability |
+| ⁠ EMERGENCY_REPORTABLE ⁠ | Y | Exceeds reporting threshold |
+| ⁠ SAT_1 ⁠ / ⁠ SAT1_OBJECT_TYPE ⁠ | GEOSAT (NORAD 15595) / PAYLOAD (LARGE RCS) | Active payload (US Navy) |
+| ⁠ SAT_2 ⁠ / ⁠ SAT2_OBJECT_TYPE ⁠ | PSLV R/B (NORAD 39093) / ROCKET BODY (LARGE RCS) | Abandoned rocket body |
 
 This is precisely the scenario our visualization aims to make tangible: two massive objects, neither of which can manoeuvre, converging to within a few hundred metres. A collision at these velocities would generate thousands of new debris fragments, each capable of triggering further collisions, the first step in the Kessler cascade.
 
@@ -213,9 +246,9 @@ Our project bridges the gap between raw spatial data and public awareness throug
 To bridge the gap between complex orbital mechanics and intuitive storytelling, we draw inspiration from premier data journalism and space agencies:
 
 - Narrative Scrollytelling (The Pudding): We look to The Pudding as a structural benchmark for scrollytelling. Their ability to guide users through complex datasets step-by-step is essential for preventing "data overwhelm" when visualizing the 68,147 objects currently tracked in CelesTrak's SATCAT.
-   Reference: ⁠ https://pudding.cool/2017/10/satellites/ ⁠
+   Reference: ⁠ https://pudding.cool/2017/10/satellites/ ⁠
 - Layered Visual Language (Information is Beautiful): To represent the diverse populations of orbital objects—including the 2.4:1 ratio of debris to operational satellites—we adapt the dense, layered aesthetic popularized by Information is Beautiful. This style allows for a clear comparison of mass and purpose across thousands of data points.
-   Reference: ⁠ https://informationisbeautiful.net ⁠ / ⁠ https://satellitecharts.xyz ⁠
+   Reference: ⁠ https://informationisbeautiful.net ⁠ / ⁠ https://satellitecharts.xyz ⁠
 - From Discrete Points to Orbital Density (ESA): We take inspiration from the ESA Space Debris Office and their use of spatial density maps. Rather than rendering satellites as isolated dots, which can be misleading at a global scale, we aim to visualize "orbital highways" as continuous regions of varying density. This approach effectively illustrates how the extreme concentration in LEO (89.5% of active satellites) creates "stressed" environments where the risk of the Kessler Syndrome becomes a visible reality.
    
 <p align="center">
@@ -223,12 +256,55 @@ To bridge the gap between complex orbital mechanics and intuitive storytelling, 
   <br>
   <em>Figure 4: Spatial density of objects by orbital altitude (ESA).</em>
 </p>
-  Reference: ⁠ https://www.esa.int/ESA_Multimedia/Images/2019/10/Spatial_density_of_objects_by_orbital_altitude ⁠
+  Reference: ⁠ https://www.esa.int/ESA_Multimedia/Images/2019/10/Spatial_density_of_objects_by_orbital_altitude ⁠
 
-  ## Milestone 2
-A pdf version of the Milestone 2 report can be found [here](./milestones/milestone2/Space_Oddities_Milestone_2.pdf)
+## Milestone 2 (1st May, 5pm)
 
-The website prototype for Milestone 2 can be found [here](https://com-480-data-visualization.github.io/space-oddities/)
+A pdf version of the Milestone 2 report can be found [here](./milestones/milestone2/Space_Oddities_Milestone_2.pdf).
+
+This milestone delivered the first functional prototype of the website, with the basic skeleton of the visualizations and widgets. The live URL (linked above) now serves the final Milestone 3 build — the Milestone 2 prototype is preserved in the project's git history.
+
+---
+
+## Milestone 3 (28th May, 5pm)
+
+The final deliverable for *Space Oddities* is a seven-chapter scrollytelling experience telling the story of orbital congestion from 1957 to today, built for an audience that has never opened a TLE file. All figures reflect the **24 May 2026 data snapshot**: 69,055 objects ever tracked, 32,958 still in orbit (17,788 active payloads, 12,291 debris fragments, 2,236 spent rocket bodies), 84.1% of active payloads in LEO, and 10,371 Starlink satellites in orbit.
+
+### Final deliverables
+
+| | |
+| :-- | :-- |
+| 🌍 **Live website** | [com-480-data-visualization.github.io/space-oddities](https://com-480-data-visualization.github.io/space-oddities/) |
+| 🎥 **Screencast (2 min)** | [youtube.com/watch?v=liPMFObGeAc](https://www.youtube.com/watch?v=liPMFObGeAc) |
+| 📖 **Process Book** | [milestones/milestone3/Space_Oddities_Process_Book.pdf](./milestones/milestone3/Space_Oddities_Process_Book.pdf) |
+
+### What's on the site
+
+The visualization is structured as a guided scroll through seven chapters:
+
+1. **The Sky Is Getting Crowded** — a dot-per-object orbit canvas with a year slider from 1957 to today, showing the exponential break around 2019.
+2. **Where Do They Orbit?** — a side-on altitude view of LEO, MEO and GEO with hover-to-highlight orbit bands and a click-to-filter bar chart.
+3. **Who Owns Orbit?** — country and operator small-multiples expose the privatisation of orbit: *SpaceX alone now operates more satellites than every government combined.*
+4. **Most of It Is Junk** — a type-breakdown bar chart and a sunburst wheel (`TypeOwnershipWheel`) toggle between two views to reveal that of ~32,958 tracked objects, active payloads are a minority while debris and rocket bodies dominate.
+5. **One Collision Can Trigger a Chain Reaction** — an interactive Keplerian orbit simulator lets the user click any satellite and watch a stochastic debris cascade propagate. A dual-panel debris-growth chart (`DebrisGrowthChart`) below the simulator contextualises the cascade with real historical data 1957–2024, annotating five key collision events.
+6. **Near-Misses Happen Every Day** — a table of 2,129 real Space-Track CDMs, each linked to an SGP4-computed approach curve and a highway-scale miss animation.
+7. **Our Predictions Are Often Wrong** — covariance error ellipses at the time of closest approach show how positional uncertainty grows with TLE epoch age.
+
+### Technical setup
+
+The project is split into two independent parts: a **Python data pipeline** (offline, run periodically) and a **React 19 + Vite static front-end** (served via GitHub Pages). See [Data Pipeline](#data-pipeline) above for the pipeline, and [Running the Website Locally](#running-the-website-locally) for the front-end.
+
+**Stack:** Python (pandas, sgp4) for the offline pipeline · React 19 + Vite · @visx (D3-based React charting library) + D3 for canvas drawing · satellite.js (browser-side SGP4 propagation) · GitHub Pages for hosting.
+
+### Team contributions
+
+| Member | Primary contributions | Share |
+| :--- | :--- | :--- |
+| **Vincent Fiszbin** | Data pipeline (`fetch`, `clean`, `merge`); SGP4 / orbit engine; CDM extraction & filtering; deployment workflow | 33% |
+| **Philip P. J. Hamelink** | React components: `KesslerSimulator` (physics engine), `CarAnimationMiss`, `CovarianceViz`, `Hero`, `Team`, `ErrorBoundary`; final data pipeline refresh & deployment; visual identity & UI/UX styling; scrollytelling layout; M2 prototype | 33% |
+| **Julien Schluchter** | Scrollytelling spine, CDM near-miss panel & physics module; copy-writing and narrative editing; M1 and M3 reports; screencast | 33% |
+
+A full breakdown is provided in §7 of the [Process Book](./milestones/milestone3/Space_Oddities_Process_Book.pdf).
 
 ---
 
